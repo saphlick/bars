@@ -428,9 +428,9 @@ function renderBars(list) {
   el.innerHTML = list.map(buildBarCard).join('');
 
   list.forEach(bar => {
-    document.getElementById(`toggle-${bar.id}`).addEventListener('click', () =>
-      document.getElementById(`card-${bar.id}`).classList.toggle('open')
-    );
+    const toggleCard = () => document.getElementById(`card-${bar.id}`).classList.toggle('open');
+    document.getElementById(`toggle-${bar.id}`).addEventListener('click', toggleCard);
+    document.getElementById(`toggle2-${bar.id}`).addEventListener('click', toggleCard);
 
     CATEGORIES.forEach(cat => {
       const stars = document.querySelectorAll(`#stars-${bar.id}-${cat.id} .star`);
@@ -528,7 +528,7 @@ function buildBarCard(bar) {
       </div>
       ${bar.description ? `<div class="bar-desc">${bar.description}</div>` : ''}
       <div style="padding:0 24px 16px">
-        <button class="toggle-btn" id="toggleBtn-${bar.id}">
+        <button class="toggle-btn" id="toggle2-${bar.id}">
           Rate &amp; Reviews <em class="toggle-icon">▼</em>
         </button>
       </div>
