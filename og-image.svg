@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <linearGradient id="bg1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0d0a12"/>
+      <stop offset="100%" style="stop-color:#16101f"/>
+    </linearGradient>
+    <radialGradient id="glow1" cx="20%" cy="25%" r="60%">
+      <stop offset="0%" style="stop-color:rgba(230,63,110,0.18)"/>
+      <stop offset="100%" style="stop-color:rgba(230,63,110,0)"/>
+    </radialGradient>
+    <radialGradient id="glow2" cx="80%" cy="75%" r="60%">
+      <stop offset="0%" style="stop-color:rgba(176,111,216,0.2)"/>
+      <stop offset="100%" style="stop-color:rgba(176,111,216,0)"/>
+    </radialGradient>
+    <linearGradient id="textGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#e63f6e"/>
+      <stop offset="50%" style="stop-color:#b06fd8"/>
+      <stop offset="100%" style="stop-color:#f0c060"/>
+    </linearGradient>
+    <linearGradient id="divider" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:rgba(176,111,216,0)"/>
+      <stop offset="50%" style="stop-color:rgba(176,111,216,0.6)"/>
+      <stop offset="100%" style="stop-color:rgba(176,111,216,0)"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="630" fill="url(#bg1)"/>
+  <rect width="1200" height="630" fill="url(#glow1)"/>
+  <rect width="1200" height="630" fill="url(#glow2)"/>
+
+  <!-- Divider line -->
+  <rect x="500" y="390" width="200" height="1" fill="url(#divider)"/>
+
+  <!-- Main logo text -->
+  <text
+    x="600" y="340"
+    font-family="Georgia, 'Times New Roman', serif"
+    font-size="148"
+    font-weight="bold"
+    text-anchor="middle"
+    fill="url(#textGrad)"
+    letter-spacing="-3"
+  >saphlick</text>
+
+  <!-- Tagline -->
+  <text
+    x="600" y="420"
+    font-family="Arial, sans-serif"
+    font-size="22"
+    font-weight="300"
+    text-anchor="middle"
+    fill="#9080a8"
+    letter-spacing="8"
+  >QUEER BAR RATINGS</text>
+</svg>
