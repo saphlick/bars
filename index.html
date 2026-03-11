@@ -54,7 +54,7 @@
 
   /* TOOLBAR */
   .toolbar { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: 28px; }
-  @media (max-width: 600px) { .search-wrap { flex: 1; min-width: 0; } .sort-select { font-size: 0.75rem; padding: 10px 10px; flex-shrink: 0; } .add-bar-btn { width: 100%; } .toolbar { flex-wrap: wrap; } }
+  @media (max-width: 600px) { .search-wrap { flex: 1; min-width: 0; } .sort-select { font-size: 0.75rem; padding: 10px 10px; flex-shrink: 0; } .add-bar-btn { width: 100%; } .toolbar { flex-wrap: wrap; } .search-wrap input::placeholder { color: transparent; } .search-wrap input:focus::placeholder { color: var(--muted); } }
   .search-wrap { flex: 1; min-width: 200px; position: relative; }
   .search-wrap input {
     width: 100%; background: var(--card); border: 1px solid var(--border); border-radius: 100px;
