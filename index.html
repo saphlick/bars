@@ -412,7 +412,7 @@ function renderLeaderboard(list) {
   if (!rated.length) { section.style.display = 'none'; return; }
   section.style.display = 'block';
   lb.innerHTML = rated.map((x, i) => `
-    <div class="lb-card">
+    <div class="lb-card" onclick="scrollToBar('${x.bar.id}')" style="cursor:pointer">
       <div class="lb-rank">#${i+1}</div>
       <div class="lb-name">${x.bar.name}</div>
       <div class="lb-city">${x.bar.city||''}</div>
@@ -603,6 +603,16 @@ function showToast(msg, err=false) {
 
 
 
+
+// ─── Scroll to bar ────────────────────────────────────────────────────────────
+function scrollToBar(barId) {
+  const card = document.getElementById('card-' + barId);
+  if (!card) return;
+  card.classList.add('open');
+  setTimeout(() => {
+    card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 50);
+}
 // ─── Init ─────────────────────────────────────────────────────────────────────
 loadAll();
 subscribeRealtime();
