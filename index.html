@@ -933,8 +933,51 @@ function scrollToBar(barId) {
     card.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }, 50);
 }
+
+// ─── Auto geolocation on load ─────────────────────────────────────────────────
+async function autoDetectLocation() {
+  if (!navigator.geolocation) return;
+  navigator.geolocation.getCurrentPosition(async (pos) => {
+    try {
+      const { latitude, longitude } = pos.coords;
+      const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`, {
+        headers: { 'Accept-Language': 'en' }
+      });
+      const data = await res.json();
+      const address = data.address || {};
+      const countryName = (address.country || '').toLowerCase();
+      const stateName = (address.state || '').toLowerCase();
+      const cityName = (address.city || address.town || address.village || '').toLowerCase();
+
+      const matchedCountry = bars.find(b => b.country && b.country.toLowerCase() === countryName);
+      if (!matchedCountry) return; // no bars in this country, show all
+
+      activeCountryFilter = matchedCountry.country;
+      document.getElementById('countrySelect').value = matchedCountry.country;
+
+      if (matchedCountry.country === 'United States' && stateName) {
+        const matchedState = bars.find(b => b.state && b.state.toLowerCase() === stateName);
+        if (matchedState) {
+          activeStateFilter = matchedState.state;
+          document.getElementById('stateSelect').value = matchedState.state;
+        }
+      }
+
+      if (cityName) {
+        const matchedCity = bars.find(b => b.city && b.city.toLowerCase() === cityName);
+        if (matchedCity) {
+          activeCityFilter = matchedCity.city;
+          document.getElementById('citySelect').value = matchedCity.city;
+        }
+      }
+
+      renderAll();
+    } catch(e) { /* silently fail */ }
+  }, () => { /* permission denied, show all */ });
+}
+
 // ─── Init ─────────────────────────────────────────────────────────────────────
-loadAll();
+loadAll().then(() => autoDetectLocation());
 subscribeRealtime();
 </script>
 </body>
