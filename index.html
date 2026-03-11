@@ -455,7 +455,7 @@ function renderAll() {
 function renderCountryFilters() {
   const countries = allCountries();
   const el = document.getElementById('countryFilters');
-  if (countries.length <= 1) { el.innerHTML = ''; return; }
+  if (countries.length === 0) { el.innerHTML = ''; return; }
   el.innerHTML = `
     <span class="city-label">Country</span>
     <button class="city-pill${activeCountryFilter==='all'?' active':''}" data-country="all">All</button>
