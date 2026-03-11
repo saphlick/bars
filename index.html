@@ -525,7 +525,8 @@ function filteredBars() {
       b.name.toLowerCase().includes(q) ||
       (b.city||'').toLowerCase().includes(q) ||
       (b.neighborhood||'').toLowerCase().includes(q) ||
-      (b.description||'').toLowerCase().includes(q)
+      (b.description||'').toLowerCase().includes(q) ||
+      (b.state||'').toLowerCase().includes(q)
     );
   }
   if (sortMode === 'rating') {
@@ -684,7 +685,7 @@ function buildBarCard(bar) {
       }).join('')
     : `<div class="no-reviews">No ratings yet — be the first!</div>`;
 
-  const cityTag = [bar.country, bar.city, bar.neighborhood].filter(Boolean).join(' · ');
+  const cityTag = [bar.country, bar.state, bar.city, bar.neighborhood].filter(Boolean).join(' · ');
 
   return `
     <div class="bar-card" id="card-${bar.id}">
@@ -726,6 +727,12 @@ function buildBarCard(bar) {
 // ─── Add Bar ──────────────────────────────────────────────────────────────────
 document.getElementById('openAddBar').addEventListener('click', () => document.getElementById('addBarModal').classList.add('open'));
 document.getElementById('closeAddBar').addEventListener('click', () => document.getElementById('addBarModal').classList.remove('open'));
+document.getElementById('newBarCountry').addEventListener('change', e => {
+  const stateGroup = document.getElementById('stateGroup');
+  stateGroup.style.display = e.target.value === 'United States' ? 'block' : 'none';
+  document.getElementById('newBarState').value = '';
+});
+
 document.getElementById('addBarModal').addEventListener('click', e => {
   if (e.target === document.getElementById('addBarModal')) document.getElementById('addBarModal').classList.remove('open');
 });
@@ -736,7 +743,9 @@ document.getElementById('submitNewBar').addEventListener('click', async () => {
   const hood = document.getElementById('newBarHood').value.trim();
   const desc = document.getElementById('newBarDesc').value.trim();
   const country = document.getElementById('newBarCountry').value.trim();
+  const state = document.getElementById('newBarState').value.trim();
   if (!name || !city || !country) { showToast('Name, country and city are required', true); return; }
+  if (country === 'United States' && !state) { showToast('Please select a state', true); return; }
 
   const address = document.getElementById('newBarAddress').value.trim();
   const btn = document.getElementById('submitNewBar');
@@ -751,7 +760,7 @@ document.getElementById('submitNewBar').addEventListener('click', async () => {
 
   const { error } = await sb.from('bars').insert([{
     id: Date.now().toString(36) + Math.random().toString(36).slice(2,6),
-    name, country, city, neighborhood: hood, description: desc, address, lat, lng,
+    name, country, state: country === 'United States' ? state : null, city, neighborhood: hood, description: desc, address, lat, lng,
     added_at: Date.now()
   }]);
 
@@ -759,7 +768,10 @@ document.getElementById('submitNewBar').addEventListener('click', async () => {
   if (error) { showToast('Error adding bar — try again', true); return; }
 
   document.getElementById('addBarModal').classList.remove('open');
-  ['newBarName','newBarCountry','newBarCity','newBarHood','newBarAddress','newBarDesc'].forEach(id => document.getElementById(id).value = '');
+  ['newBarName','newBarCity','newBarHood','newBarAddress','newBarDesc'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('newBarCountry').value = '';
+  document.getElementById('newBarState').value = '';
+  document.getElementById('stateGroup').style.display = 'none';
   showToast(`${name} added ✓`);
   await loadAll();
 });
