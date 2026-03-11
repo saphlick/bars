@@ -206,7 +206,7 @@
   <div class="toolbar">
     <div class="search-wrap">
       <span class="search-icon">🔍</span>
-      <input type="text" id="searchInput" placeholder="Search bars, cities, neighbourhoods...">
+      <input type="text" id="searchInput" placeholder="Search..." data-full-placeholder="Search bars, cities, neighbourhoods...">
     </div>
     <select class="sort-select" id="sortSelect">
       <option value="rating">Top rated</option>
@@ -600,6 +600,13 @@ function showToast(msg, err=false) {
   t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 2400);
 }
+
+
+// ─── Search placeholder swap on mobile ───────────────────────────────────────
+const searchInput = document.getElementById('searchInput');
+const fullPlaceholder = searchInput.dataset.fullPlaceholder;
+searchInput.addEventListener('focus', () => searchInput.placeholder = fullPlaceholder);
+searchInput.addEventListener('blur', () => { if (!searchInput.value) searchInput.placeholder = 'Search...'; });
 
 // ─── Init ─────────────────────────────────────────────────────────────────────
 loadAll();
