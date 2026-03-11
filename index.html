@@ -1,783 +1,607 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Sapphic Spots Amsterdam</title>
-    <style>
-      :root {
-        --bg: #170b2c;
-        --bg-2: #2a1244;
-        --panel: rgba(38, 18, 67, 0.76);
-        --panel-2: rgba(68, 27, 109, 0.9);
-        --text: #fff7fd;
-        --muted: #f0d8ef;
-        --border: rgba(255,255,255,0.14);
-        --pink: #ff70b8;
-        --rose: #ff8ecb;
-        --orange: #ffb36b;
-        --gold: #ffd96b;
-        --lavender: #b798ff;
-        --violet: #8b5cf6;
-        --mint: #7ef0c7;
-        --shadow: 0 16px 44px rgba(9, 4, 20, 0.35);
-      }
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>saphlick</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root {
+    --bg: #0d0a12;
+    --surface: #16101f;
+    --card: #1c1428;
+    --accent: #e63f6e;
+    --accent2: #b06fd8;
+    --gold: #f0c060;
+    --text: #f0eaf8;
+    --muted: #9080a8;
+    --border: rgba(176,111,216,0.18);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: 'DM Sans', sans-serif; font-weight: 300;
+    min-height: 100vh; overflow-x: hidden;
+  }
+  body::before {
+    content: ''; position: fixed; inset: 0;
+    background:
+      radial-gradient(ellipse 60% 40% at 15% 20%, rgba(230,63,110,0.12) 0%, transparent 60%),
+      radial-gradient(ellipse 50% 50% at 85% 80%, rgba(176,111,216,0.14) 0%, transparent 60%);
+    pointer-events: none; z-index: 0;
+  }
+  .container { max-width: 900px; margin: 0 auto; padding: 0 24px 80px; position: relative; z-index: 1; }
 
-      * { box-sizing: border-box; }
+  /* HEADER */
+  header { text-align: center; padding: 64px 0 48px; }
+  .logo {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(3rem, 8vw, 5.5rem); font-weight: 700; letter-spacing: -0.02em;
+    background: linear-gradient(135deg, #e63f6e 0%, #b06fd8 50%, #f0c060 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    line-height: 1; margin-bottom: 10px;
+  }
+  .tagline { color: var(--muted); font-size: 0.9rem; letter-spacing: 0.18em; text-transform: uppercase; margin-bottom: 36px; }
+  .header-divider { width: 120px; height: 1px; background: linear-gradient(90deg, transparent, var(--accent2), transparent); margin: 0 auto 40px; }
 
-      body {
-        margin: 0;
-        color: var(--text);
-        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-        min-height: 100vh;
-        background:
-          radial-gradient(circle at top left, rgba(255, 112, 184, 0.32), transparent 26%),
-          radial-gradient(circle at top right, rgba(183, 152, 255, 0.24), transparent 26%),
-          radial-gradient(circle at bottom left, rgba(255, 179, 107, 0.18), transparent 22%),
-          linear-gradient(180deg, var(--bg) 0%, var(--bg-2) 100%);
-      }
+  /* SYNC DOT */
+  .sync-dot { width: 7px; height: 7px; border-radius: 50%; background: #3a2f4a; display: inline-block; margin-left: 8px; vertical-align: middle; transition: background 0.3s; }
+  .sync-dot.live    { background: #4cd97b; }
+  .sync-dot.loading { background: var(--gold); animation: pulse 0.8s infinite; }
+  .sync-dot.error   { background: var(--accent); }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
 
-      a { color: #ffd8f3; }
-      code, pre { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+  /* TOOLBAR */
+  .toolbar { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: 28px; }
+  .search-wrap { flex: 1; min-width: 200px; position: relative; }
+  .search-wrap input {
+    width: 100%; background: var(--card); border: 1px solid var(--border); border-radius: 100px;
+    color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 0.88rem;
+    padding: 10px 18px 10px 40px; outline: none; transition: border-color 0.2s;
+  }
+  .search-wrap input:focus { border-color: var(--accent2); }
+  .search-wrap input::placeholder { color: var(--muted); }
+  .search-icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: 0.9rem; pointer-events: none; }
+  .sort-select {
+    background: var(--card); border: 1px solid var(--border); border-radius: 100px;
+    color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 0.85rem;
+    padding: 10px 18px; outline: none; cursor: pointer;
+  }
+  .sort-select option { background: var(--card); }
+  .add-bar-btn {
+    background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #fff; border: none;
+    border-radius: 100px; padding: 10px 22px; font-family: 'DM Sans', sans-serif;
+    font-size: 0.88rem; font-weight: 500; cursor: pointer; white-space: nowrap;
+    transition: opacity 0.2s, transform 0.15s;
+  }
+  .add-bar-btn:hover { opacity: 0.88; transform: scale(1.02); }
 
-      .container {
-        width: min(1180px, calc(100% - 28px));
-        margin: 0 auto;
-        padding: 28px 0 72px;
-      }
+  /* CITY PILLS */
+  .city-filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 40px; align-items: center; }
+  .city-label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.14em; color: var(--muted); margin-right: 2px; }
+  .city-pill {
+    background: var(--card); border: 1px solid var(--border); color: var(--muted);
+    padding: 5px 15px; border-radius: 100px; font-size: 0.8rem; cursor: pointer;
+    transition: all 0.18s; font-family: 'DM Sans', sans-serif;
+  }
+  .city-pill:hover { border-color: var(--accent2); color: var(--text); }
+  .city-pill.active { background: var(--accent2); border-color: var(--accent2); color: #fff; }
 
-      .hero {
-        position: relative;
-        overflow: hidden;
-        border-radius: 32px;
-        padding: 30px;
-        background:
-          linear-gradient(135deg, rgba(255,112,184,0.18), rgba(183,152,255,0.12)),
-          rgba(33, 15, 57, 0.86);
-        border: 1px solid var(--border);
-        box-shadow: var(--shadow);
-        backdrop-filter: blur(16px);
-      }
+  /* SECTION TITLE */
+  .section-title {
+    font-family: 'Playfair Display', serif; font-size: 1.5rem; margin-bottom: 18px;
+    color: var(--text); display: flex; align-items: center; gap: 14px;
+  }
+  .section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
 
-      .hero::after {
-        content: "";
-        position: absolute;
-        inset: auto -60px -60px auto;
-        width: 220px;
-        height: 220px;
-        background: radial-gradient(circle, rgba(255,217,107,0.35), transparent 65%);
-        pointer-events: none;
-      }
+  /* LEADERBOARD */
+  .leaderboard { display: grid; grid-template-columns: repeat(auto-fill, minmax(148px, 1fr)); gap: 10px; margin-bottom: 52px; }
+  .lb-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 16px; text-align: center; transition: border-color 0.2s; }
+  .lb-card:hover { border-color: rgba(176,111,216,0.4); }
+  .lb-rank { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--muted); margin-bottom: 4px; }
+  .lb-name { font-family: 'Playfair Display', serif; font-size: 0.95rem; font-weight: 700; line-height: 1.25; margin-bottom: 3px; }
+  .lb-city { font-size: 0.7rem; color: var(--muted); margin-bottom: 6px; }
+  .lb-score { font-size: 1.5rem; font-family: 'Playfair Display', serif; color: var(--gold); font-weight: 700; }
 
-      .eyebrow {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        padding: 8px 14px;
-        border-radius: 999px;
-        background: rgba(255,255,255,0.08);
-        border: 1px solid rgba(255,255,255,0.12);
-        color: #ffe4f5;
-        font-size: 0.92rem;
-      }
+  /* BAR CARDS */
+  .bars-list { display: flex; flex-direction: column; gap: 18px; }
+  .bar-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; transition: border-color 0.2s, transform 0.2s; }
+  .bar-card:hover { border-color: rgba(176,111,216,0.4); transform: translateY(-2px); }
+  .bar-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; padding: 22px 24px 0; cursor: pointer; user-select: none; }
+  .bar-meta { flex: 1; }
+  .bar-city-tag { display: inline-block; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.13em; color: var(--accent2); background: rgba(176,111,216,0.1); border-radius: 100px; padding: 2px 10px; margin-bottom: 6px; }
+  .bar-name { font-family: 'Playfair Display', serif; font-size: 1.4rem; font-weight: 700; color: var(--text); line-height: 1.2; }
+  .bar-desc { font-size: 0.87rem; color: var(--muted); line-height: 1.65; padding: 8px 24px 16px; font-style: italic; }
+  .bar-avg { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; flex-shrink: 0; }
+  .avg-score { font-family: 'Playfair Display', serif; font-size: 2.1rem; font-weight: 700; line-height: 1; color: var(--gold); }
+  .avg-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); }
+  .avg-stars { font-size: 0.85rem; color: var(--gold); letter-spacing: 1px; }
 
-      h1 {
-        margin: 16px 0 10px;
-        font-size: clamp(2.2rem, 4.8vw, 4.2rem);
-        line-height: 1;
-        max-width: 760px;
-      }
+  /* RATING FORM */
+  .rating-form { padding: 0 24px 24px; border-top: 1px solid var(--border); display: none; }
+  .bar-card.open .rating-form { display: block; }
+  .form-title { font-size: 0.76rem; text-transform: uppercase; letter-spacing: 0.14em; color: var(--muted); margin: 18px 0 14px; }
+  .categories-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(185px, 1fr)); gap: 14px; margin-bottom: 20px; }
+  .category-item { display: flex; flex-direction: column; gap: 6px; }
+  .cat-label { font-size: 0.78rem; color: var(--muted); display: flex; justify-content: space-between; align-items: center; }
+  .cat-score-display { font-weight: 500; color: var(--accent2); min-width: 24px; text-align: right; }
+  .star-row { display: flex; gap: 4px; }
+  .star { font-size: 1.3rem; cursor: pointer; color: #3a2f4a; transition: color 0.12s, transform 0.1s; line-height: 1; }
+  .star:hover, .star.lit { color: var(--gold); }
+  .star:active { transform: scale(0.85); }
+  .input-group { display: flex; flex-direction: column; gap: 5px; }
+  .input-group label { font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--muted); }
+  .input-group input, .input-group textarea {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+    color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 0.9rem;
+    padding: 10px 14px; width: 100%; outline: none; transition: border-color 0.2s;
+  }
+  .input-group input:focus, .input-group textarea:focus { border-color: var(--accent2); }
+  .input-group textarea { resize: vertical; min-height: 68px; }
+  .submit-btn {
+    background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #fff; border: none;
+    border-radius: 100px; padding: 11px 30px; font-family: 'DM Sans', sans-serif;
+    font-size: 0.88rem; font-weight: 500; cursor: pointer; transition: opacity 0.2s, transform 0.15s;
+  }
+  .submit-btn:hover { opacity: 0.88; transform: scale(1.02); }
+  .submit-btn:disabled { opacity: 0.5; cursor: default; transform: none; }
 
-      .hero p {
-        margin: 0;
-        max-width: 780px;
-        color: var(--muted);
-        font-size: 1.05rem;
-        line-height: 1.7;
-      }
+  /* REVIEWS */
+  .reviews-section { margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--border); display: none; }
+  .bar-card.open .reviews-section { display: block; }
+  .reviews-title { font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.14em; color: var(--muted); margin-bottom: 12px; }
+  .review-item { background: var(--surface); border-radius: 10px; padding: 12px 14px; margin-bottom: 10px; border-left: 2px solid var(--accent2); }
+  .review-top { display: flex; justify-content: space-between; margin-bottom: 6px; align-items: center; }
+  .reviewer-name { font-size: 0.83rem; font-weight: 500; color: var(--accent2); }
+  .review-avg { font-family: 'Playfair Display', serif; font-size: 1rem; color: var(--gold); }
+  .review-cats { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 6px; }
+  .review-cat-pill { font-size: 0.7rem; background: rgba(176,111,216,0.1); border-radius: 100px; padding: 2px 9px; color: var(--muted); }
+  .review-cat-pill span { color: var(--text); font-weight: 500; }
+  .review-note { font-size: 0.82rem; color: var(--muted); font-style: italic; line-height: 1.5; }
+  .toggle-btn {
+    background: transparent; border: 1px solid var(--border); color: var(--muted);
+    border-radius: 100px; padding: 6px 18px; font-size: 0.78rem; cursor: pointer;
+    font-family: 'DM Sans', sans-serif; transition: all 0.2s; display: inline-flex; align-items: center; gap: 6px;
+  }
+  .toggle-btn:hover { border-color: var(--accent2); color: var(--accent2); }
+  .toggle-icon { display: inline-block; transition: transform 0.2s; font-style: normal; }
+  .bar-card.open .toggle-icon { transform: rotate(180deg); }
+  .no-reviews { font-size: 0.83rem; color: var(--muted); font-style: italic; }
 
-      .chip-row {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 10px;
-        margin-top: 18px;
-      }
+  /* EMPTY / LOADING STATE */
+  .empty-state { text-align: center; padding: 60px 24px; color: var(--muted); }
+  .empty-state .big { font-family: 'Playfair Display', serif; font-size: 2rem; margin-bottom: 10px; color: var(--text); }
 
-      .chip {
-        padding: 8px 12px;
-        border-radius: 999px;
-        border: 1px solid rgba(255,255,255,0.12);
-        background: rgba(255,255,255,0.06);
-        color: #fff8fd;
-        font-size: 0.92rem;
-      }
+  /* MODALS */
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(13,10,18,0.92); z-index: 500; align-items: center; justify-content: center; padding: 24px; }
+  .modal-overlay.open { display: flex; }
+  .modal-box { background: var(--card); border: 1px solid rgba(176,111,216,0.3); border-radius: 20px; padding: 36px; max-width: 520px; width: 100%; max-height: 90vh; overflow-y: auto; }
+  .modal-title { font-family: 'Playfair Display', serif; font-size: 1.6rem; font-weight: 700; margin-bottom: 20px; background: linear-gradient(135deg, #e63f6e, #b06fd8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  .modal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 4px; }
+  .modal-grid .full { grid-column: 1 / -1; }
+  .modal-actions { display: flex; gap: 12px; align-items: center; margin-top: 20px; flex-wrap: wrap; }
+  .cancel-btn { background: transparent; border: none; color: var(--muted); font-family: 'DM Sans', sans-serif; font-size: 0.88rem; cursor: pointer; padding: 4px; }
+  .cancel-btn:hover { color: var(--text); }
 
-      .status {
-        margin-top: 18px;
-        padding: 14px 16px;
-        border-radius: 18px;
-        border: 1px solid rgba(255,255,255,0.1);
-        background: rgba(255,255,255,0.05);
-        color: var(--muted);
-      }
+  /* TOAST */
+  #toast { position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(80px); background: var(--accent); color: #fff; padding: 12px 28px; border-radius: 100px; font-size: 0.88rem; z-index: 999; transition: transform 0.3s ease; pointer-events: none; white-space: nowrap; }
+  #toast.show { transform: translateX(-50%) translateY(0); }
 
-      .toolbar {
-        margin: 24px 0 18px;
-        display: grid;
-        grid-template-columns: 1.4fr 1fr 1fr;
-        gap: 14px;
-      }
+  footer { text-align: center; color: var(--muted); font-size: 0.78rem; padding-top: 32px; border-top: 1px solid var(--border); letter-spacing: 0.08em; }
+  footer a { color: var(--muted); text-decoration: underline; text-underline-offset: 3px; }
+  footer a:hover { color: var(--accent2); }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <div class="logo">saphlick</div>
+    <div class="tagline">queer bar ratings <span class="sync-dot loading" id="syncDot"></span></div>
+    <div class="header-divider"></div>
+  </header>
 
-      .input, .select, .textarea, .button {
-        width: 100%;
-        padding: 14px 16px;
-        border-radius: 18px;
-        border: 1px solid rgba(255,255,255,0.12);
-        background: rgba(31, 14, 53, 0.92);
-        color: var(--text);
-        font-size: 1rem;
-      }
-
-      .input::placeholder, .textarea::placeholder { color: rgba(255,255,255,0.55); }
-      .textarea { min-height: 116px; resize: vertical; }
-
-      .button {
-        font-weight: 800;
-        border: none;
-        cursor: pointer;
-        background: linear-gradient(135deg, var(--pink), var(--orange), var(--lavender));
-        color: #2d123f;
-        box-shadow: 0 10px 24px rgba(255,112,184,0.28);
-        transition: transform 0.15s ease, opacity 0.2s ease;
-      }
-
-      .button:hover { transform: translateY(-1px); }
-      .button:disabled { cursor: not-allowed; opacity: 0.7; }
-
-      .grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(330px, 1fr));
-        gap: 18px;
-      }
-
-      .card {
-        position: relative;
-        overflow: hidden;
-        padding: 22px;
-        border-radius: 28px;
-        border: 1px solid rgba(255,255,255,0.12);
-        background:
-          linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02)),
-          rgba(36, 17, 63, 0.92);
-        box-shadow: var(--shadow);
-      }
-
-      .card::before {
-        content: "";
-        position: absolute;
-        top: -40px;
-        right: -40px;
-        width: 120px;
-        height: 120px;
-        background: radial-gradient(circle, rgba(255,112,184,0.22), transparent 70%);
-        pointer-events: none;
-      }
-
-      .card-header {
-        display: flex;
-        justify-content: space-between;
-        gap: 16px;
-        align-items: flex-start;
-      }
-
-      .card h2 {
-        margin: 0 0 8px;
-        font-size: 1.35rem;
-      }
-
-      .meta {
-        color: var(--muted);
-        font-size: 0.95rem;
-        line-height: 1.6;
-      }
-
-      .link-row {
-        display: flex;
-        gap: 10px;
-        flex-wrap: wrap;
-        margin-top: 10px;
-      }
-
-      .tag-link {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        padding: 8px 12px;
-        border-radius: 999px;
-        text-decoration: none;
-        background: rgba(255,255,255,0.08);
-        border: 1px solid rgba(255,255,255,0.1);
-      }
-
-      .scorebox {
-        flex-shrink: 0;
-        min-width: 96px;
-        border-radius: 22px;
-        padding: 12px;
-        text-align: center;
-        background: rgba(255,255,255,0.08);
-        border: 1px solid rgba(255,255,255,0.12);
-      }
-
-      .scorebox strong {
-        display: block;
-        font-size: 1.45rem;
-      }
-
-      .category-grid {
-        margin-top: 16px;
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 10px;
-      }
-
-      .metric {
-        padding: 12px;
-        border-radius: 18px;
-        background: rgba(255,255,255,0.05);
-        border: 1px solid rgba(255,255,255,0.08);
-      }
-
-      .metric-label {
-        font-size: 0.82rem;
-        color: #ffe7f6;
-        margin-bottom: 4px;
-      }
-
-      .metric strong {
-        font-size: 1.02rem;
-      }
-
-      .stars {
-        color: var(--gold);
-        letter-spacing: 1px;
-      }
-
-      .review-list {
-        margin-top: 18px;
-        display: grid;
-        gap: 12px;
-      }
-
-      .review {
-        padding: 14px;
-        border-radius: 20px;
-        border: 1px solid rgba(255,255,255,0.08);
-        background: rgba(255,255,255,0.05);
-      }
-
-      .review-top {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 12px;
-        margin-bottom: 8px;
-      }
-
-      .review-meta {
-        color: var(--muted);
-        font-size: 0.88rem;
-      }
-
-      .mini-ratings {
-        margin-top: 10px;
-        display: flex;
-        gap: 8px;
-        flex-wrap: wrap;
-      }
-
-      .mini-pill {
-        padding: 6px 10px;
-        border-radius: 999px;
-        font-size: 0.82rem;
-        background: rgba(255,255,255,0.07);
-        border: 1px solid rgba(255,255,255,0.1);
-      }
-
-      .review-form {
-        margin-top: 18px;
-        padding-top: 18px;
-        border-top: 1px solid rgba(255,255,255,0.08);
-        display: grid;
-        gap: 12px;
-      }
-
-      .row-2, .row-3, .ratings-grid {
-        display: grid;
-        gap: 12px;
-      }
-
-      .row-2 { grid-template-columns: 1fr 150px; }
-      .row-3 { grid-template-columns: repeat(3, 1fr); }
-      .ratings-grid { grid-template-columns: repeat(2, 1fr); }
-
-      .empty {
-        padding: 18px;
-        text-align: center;
-        color: var(--muted);
-        border-radius: 20px;
-        border: 1px dashed rgba(255,255,255,0.18);
-      }
-
-      .footer {
-        margin-top: 28px;
-        color: var(--muted);
-        line-height: 1.7;
-      }
-
-      .footer pre {
-        white-space: pre-wrap;
-        overflow-x: auto;
-        padding: 18px;
-        border-radius: 20px;
-        background: rgba(0,0,0,0.24);
-        border: 1px solid rgba(255,255,255,0.1);
-      }
-
-      @media (max-width: 900px) {
-        .toolbar, .row-2, .row-3, .ratings-grid { grid-template-columns: 1fr; }
-        .category-grid { grid-template-columns: 1fr 1fr; }
-      }
-
-      @media (max-width: 540px) {
-        .card-header { flex-direction: column; }
-        .category-grid { grid-template-columns: 1fr; }
-      }
-    </style>
-  </head>
-  <body>
-    <div class="container">
-      <section class="hero">
-        <div class="eyebrow">🌈 Sapphic Spots Amsterdam</div>
-        <h1>Colorful sapphic nightlife reviews for Amsterdam</h1>
-        <p>
-          A brighter, more community-led bar guide where people can rate each place on vibe, music, drinks, friendliness,
-          accessibility, and how easy it is to flirt or meet people. Each listing can also link out to the bar’s Google profile.
-        </p>
-        <div class="chip-row">
-          <span class="chip">Static frontend on GitHub Pages</span>
-          <span class="chip">Community reviews in Supabase</span>
-          <span class="chip">Optional Google Maps / Business linking</span>
-          <span class="chip">Designed to feel more playful and sapphic</span>
-        </div>
-        <div class="status" id="statusBox">Loading bars and ratings...</div>
-      </section>
-
-      <section class="toolbar">
-        <input id="searchInput" class="input" type="text" placeholder="Search by bar, neighborhood, or vibe" />
-        <select id="sortSelect" class="select">
-          <option value="rating">Sort by overall rating</option>
-          <option value="reviews">Sort by most reviews</option>
-          <option value="name">Sort alphabetically</option>
-        </select>
-        <select id="filterSelect" class="select">
-          <option value="all">All neighborhoods</option>
-        </select>
-      </section>
-
-      <section class="grid" id="barsGrid"></section>
-
-      <section class="footer">
-        <p>
-          This version adds category ratings and fields for Google linking. Put it on GitHub Pages as <code>index.html</code>, then connect it to Supabase.
-        </p>
-        <pre>create table bars (
-  id bigint generated by default as identity primary key,
-  name text not null,
-  neighborhood text not null,
-  description text,
-  website text,
-  google_maps_url text,
-  google_place_id text,
-  created_at timestamptz default now()
-);
-
-create table reviews (
-  id bigint generated by default as identity primary key,
-  bar_id bigint not null references bars(id) on delete cascade,
-  reviewer_name text not null,
-  overall_rating int not null check (overall_rating between 1 and 5),
-  vibe_rating int not null check (vibe_rating between 1 and 5),
-  music_rating int not null check (music_rating between 1 and 5),
-  drinks_rating int not null check (drinks_rating between 1 and 5),
-  friendliness_rating int not null check (friendliness_rating between 1 and 5),
-  accessibility_rating int not null check (accessibility_rating between 1 and 5),
-  flirting_rating int not null check (flirting_rating between 1 and 5),
-  comment text,
-  created_at timestamptz default now()
-);
-
-insert into bars (name, neighborhood, description, website, google_maps_url, google_place_id) values
-('Example Bar 1', 'Centrum', 'Cozy dance floor and casual crowd.', 'https://example.com', 'https://maps.google.com/?cid=example', 'examplePlaceId1'),
-('Example Bar 2', 'De Pijp', 'Cocktails, events, and queer-friendly nights.', 'https://example.com', 'https://maps.google.com/?cid=example', 'examplePlaceId2');</pre>
-      </section>
+  <div class="toolbar">
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input type="text" id="searchInput" placeholder="Search bars, cities, neighbourhoods...">
     </div>
+    <select class="sort-select" id="sortSelect">
+      <option value="rating">Top rated</option>
+      <option value="newest">Newest first</option>
+      <option value="az">A – Z</option>
+      <option value="mostrated">Most rated</option>
+    </select>
+    <button class="add-bar-btn" id="openAddBar">+ Add a bar</button>
+  </div>
 
-    <script type="module">
-      import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+  <div class="city-filters" id="cityFilters"></div>
 
-      const SUPABASE_URL = 'YOUR_SUPABASE_URL';
-      const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
+  <div id="leaderboardSection" style="display:none">
+    <div class="section-title">Top picks</div>
+    <div class="leaderboard" id="leaderboard"></div>
+  </div>
 
-      const statusBox = document.getElementById('statusBox');
-      const barsGrid = document.getElementById('barsGrid');
-      const searchInput = document.getElementById('searchInput');
-      const sortSelect = document.getElementById('sortSelect');
-      const filterSelect = document.getElementById('filterSelect');
+  <div class="section-title">Bars</div>
+  <div class="bars-list" id="barsList">
+    <div class="empty-state"><div class="big">Loading…</div></div>
+  </div>
 
-      let supabase = null;
-      let bars = [];
-      let reviews = [];
+  <footer style="margin-top:52px">
+    made with <span style="color:var(--accent)">♥</span> for the crew · saphlick
+  </footer>
+</div>
 
-      const state = {
-        search: '',
-        sort: 'rating',
-        neighborhood: 'all'
-      };
+<div id="toast"></div>
 
-      const ratingFields = [
-        { key: 'overall_rating', label: 'Overall' },
-        { key: 'vibe_rating', label: 'Vibe' },
-        { key: 'music_rating', label: 'Music' },
-        { key: 'drinks_rating', label: 'Drinks' },
-        { key: 'friendliness_rating', label: 'Friendliness' },
-        { key: 'accessibility_rating', label: 'Accessibility' },
-        { key: 'flirting_rating', label: 'Meet-cute energy' }
-      ];
+<!-- ADD BAR MODAL -->
+<div class="modal-overlay" id="addBarModal">
+  <div class="modal-box">
+    <div class="modal-title">Add a bar</div>
+    <div class="modal-grid">
+      <div class="input-group full">
+        <label>Bar name *</label>
+        <input type="text" id="newBarName" placeholder="e.g. Taboo Bar">
+      </div>
+      <div class="input-group">
+        <label>City *</label>
+        <input type="text" id="newBarCity" placeholder="e.g. Amsterdam">
+      </div>
+      <div class="input-group">
+        <label>Neighbourhood</label>
+        <input type="text" id="newBarHood" placeholder="e.g. Jordaan">
+      </div>
+      <div class="input-group full" style="margin-top:2px">
+        <label>Description (optional)</label>
+        <textarea id="newBarDesc" placeholder="What's the vibe? What shouldn't people miss?"></textarea>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="submit-btn" id="submitNewBar">Add bar</button>
+      <button class="cancel-btn" id="closeAddBar">cancel</button>
+    </div>
+  </div>
+</div>
 
-      function setStatus(message, isError = false) {
-        statusBox.textContent = message;
-        statusBox.style.color = isError ? '#ffd5db' : 'var(--muted)';
-        statusBox.style.borderColor = isError ? 'rgba(255,144,161,0.35)' : 'rgba(255,255,255,0.1)';
-      }
+<script>
+// ─────────────────────────────────────────────────────────────────────────────
+// 🔧 REPLACE THESE TWO LINES WITH YOUR SUPABASE CREDENTIALS
+const SUPABASE_URL = 'https://yszfxgqrgsssuvunyfif.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlzemZ4Z3FyZ3Nzc3V2dW55ZmlmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMyMjI2NDAsImV4cCI6MjA4ODc5ODY0MH0.6vzq9bKHgdAN14inQ7os799rZnyO8C4bi83r7T-GeUg';
+// ─────────────────────────────────────────────────────────────────────────────
 
-      function escapeHtml(value) {
-        return String(value ?? '')
-          .replaceAll('&', '&amp;')
-          .replaceAll('<', '&lt;')
-          .replaceAll('>', '&gt;')
-          .replaceAll('"', '&quot;')
-          .replaceAll("'", '&#039;');
-      }
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-      function formatDate(value) {
-        return new Date(value).toLocaleDateString(undefined, {
-          year: 'numeric',
-          month: 'short',
-          day: 'numeric'
+const CATEGORIES = [
+  { id: 'drinks',   label: '🍹 Drinks'   },
+  { id: 'crowd',    label: '👯 Crowd'    },
+  { id: 'music',    label: '🎵 Music'    },
+  { id: 'vibe',     label: '✨ Vibe'     },
+  { id: 'bathroom', label: '🚻 Bathroom' },
+  { id: 'staff',    label: '💅 Staff'    },
+];
+
+// State
+let bars = [];
+let ratings = {}; // barId -> array of rating rows
+let activeCityFilter = 'all';
+let searchQuery = '';
+let sortMode = 'rating';
+
+// ─── Sync dot ────────────────────────────────────────────────────────────────
+function setSync(s) { document.getElementById('syncDot').className = 'sync-dot ' + s; }
+
+// ─── Load all data ────────────────────────────────────────────────────────────
+async function loadAll() {
+  setSync('loading');
+  try {
+    const [{ data: barsData, error: e1 }, { data: ratingsData, error: e2 }] = await Promise.all([
+      sb.from('bars').select('*').order('added_at', { ascending: true }),
+      sb.from('ratings').select('*').order('created_at', { ascending: true }),
+    ]);
+    if (e1 || e2) throw new Error(e1?.message || e2?.message);
+
+    bars = barsData || [];
+
+    // Group ratings by bar_id
+    ratings = {};
+    (ratingsData || []).forEach(r => {
+      if (!ratings[r.bar_id]) ratings[r.bar_id] = [];
+      ratings[r.bar_id].push(r);
+    });
+
+    setSync('live');
+    renderAll();
+  } catch(err) {
+    setSync('error');
+    console.error('Load failed:', err);
+    document.getElementById('barsList').innerHTML =
+      `<div class="empty-state"><div class="big">Connection error</div><p>Check your Supabase credentials in the code.</p></div>`;
+  }
+}
+
+// ─── Realtime subscriptions ───────────────────────────────────────────────────
+function subscribeRealtime() {
+  sb.channel('public-changes')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'bars' }, () => loadAll())
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'ratings' }, () => loadAll())
+    .subscribe();
+}
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+function avgRatings(barId) {
+  const rs = ratings[barId] || [];
+  if (!rs.length) return null;
+  let overall = 0;
+  const avgs = {};
+  CATEGORIES.forEach(c => {
+    const avg = rs.reduce((sum, r) => sum + (r[c.id] || 0), 0) / rs.length;
+    avgs[c.id] = avg;
+    overall += avg;
+  });
+  avgs._overall = overall / CATEGORIES.length;
+  return avgs;
+}
+
+function scoreToStars(n) {
+  const f = Math.round(n);
+  return '★'.repeat(f) + '☆'.repeat(5 - f);
+}
+
+function allCities() {
+  return [...new Set(bars.map(b => b.city).filter(Boolean))].sort();
+}
+
+function filteredBars() {
+  let list = [...bars];
+  if (activeCityFilter !== 'all') list = list.filter(b => b.city === activeCityFilter);
+  if (searchQuery) {
+    const q = searchQuery.toLowerCase();
+    list = list.filter(b =>
+      b.name.toLowerCase().includes(q) ||
+      (b.city||'').toLowerCase().includes(q) ||
+      (b.neighborhood||'').toLowerCase().includes(q) ||
+      (b.description||'').toLowerCase().includes(q)
+    );
+  }
+  if (sortMode === 'rating') {
+    list.sort((a, b) => {
+      const aa = avgRatings(a.id), bb = avgRatings(b.id);
+      return (bb ? bb._overall : -1) - (aa ? aa._overall : -1);
+    });
+  } else if (sortMode === 'newest') {
+    list.sort((a, b) => (b.added_at||0) - (a.added_at||0));
+  } else if (sortMode === 'az') {
+    list.sort((a, b) => a.name.localeCompare(b.name));
+  } else if (sortMode === 'mostrated') {
+    list.sort((a, b) => (ratings[b.id]||[]).length - (ratings[a.id]||[]).length);
+  }
+  return list;
+}
+
+// ─── Render ───────────────────────────────────────────────────────────────────
+function renderAll() {
+  renderCityFilters();
+  const list = filteredBars();
+  renderLeaderboard(list);
+  renderBars(list);
+}
+
+function renderCityFilters() {
+  const cities = allCities();
+  const el = document.getElementById('cityFilters');
+  el.innerHTML = `
+    <span class="city-label">City</span>
+    <button class="city-pill${activeCityFilter==='all'?' active':''}" data-city="all">All</button>
+    ${cities.map(c => `<button class="city-pill${activeCityFilter===c?' active':''}" data-city="${c}">${c}</button>`).join('')}
+  `;
+  el.querySelectorAll('.city-pill').forEach(btn =>
+    btn.addEventListener('click', () => { activeCityFilter = btn.dataset.city; renderAll(); })
+  );
+}
+
+function renderLeaderboard(list) {
+  const section = document.getElementById('leaderboardSection');
+  const lb = document.getElementById('leaderboard');
+  const rated = list.map(b => ({ bar: b, avg: avgRatings(b.id) }))
+    .filter(x => x.avg)
+    .sort((a, b) => b.avg._overall - a.avg._overall)
+    .slice(0, 6);
+  if (!rated.length) { section.style.display = 'none'; return; }
+  section.style.display = 'block';
+  lb.innerHTML = rated.map((x, i) => `
+    <div class="lb-card">
+      <div class="lb-rank">#${i+1}</div>
+      <div class="lb-name">${x.bar.name}</div>
+      <div class="lb-city">${x.bar.city||''}</div>
+      <div class="lb-score">${x.avg._overall.toFixed(1)}</div>
+    </div>
+  `).join('');
+}
+
+function renderBars(list) {
+  const el = document.getElementById('barsList');
+  if (!list.length) {
+    el.innerHTML = `<div class="empty-state"><div class="big">Nothing here yet</div><p>Be the first to add a bar!</p></div>`;
+    return;
+  }
+  el.innerHTML = list.map(buildBarCard).join('');
+
+  list.forEach(bar => {
+    document.getElementById(`toggle-${bar.id}`).addEventListener('click', () =>
+      document.getElementById(`card-${bar.id}`).classList.toggle('open')
+    );
+
+    CATEGORIES.forEach(cat => {
+      const stars = document.querySelectorAll(`#stars-${bar.id}-${cat.id} .star`);
+      stars.forEach((star, idx) => {
+        star.addEventListener('mouseenter', () => stars.forEach((s,i) => s.classList.toggle('lit', i<=idx)));
+        star.addEventListener('mouseleave', () => {
+          const cur = parseInt(document.getElementById(`val-${bar.id}-${cat.id}`).value||'0');
+          stars.forEach((s,i) => s.classList.toggle('lit', i<cur));
         });
-      }
+        star.addEventListener('click', () => {
+          document.getElementById(`val-${bar.id}-${cat.id}`).value = idx+1;
+          document.getElementById(`score-${bar.id}-${cat.id}`).textContent = idx+1;
+          stars.forEach((s,i) => s.classList.toggle('lit', i<=idx));
+        });
+      });
+    });
 
-      function stars(rating) {
-        const rounded = Math.round(Number(rating) || 0);
-        return '★'.repeat(rounded) + '☆'.repeat(5 - rounded);
-      }
+    document.getElementById(`submit-${bar.id}`).addEventListener('click', async () => {
+      const name = document.getElementById(`name-${bar.id}`).value.trim() || 'Anonymous';
+      const note = document.getElementById(`note-${bar.id}`).value.trim();
+      const row = { bar_id: bar.id, reviewer_name: name, note };
+      let anyFilled = false;
+      CATEGORIES.forEach(c => {
+        const v = parseInt(document.getElementById(`val-${bar.id}-${c.id}`).value||'0');
+        row[c.id] = v;
+        if (v > 0) anyFilled = true;
+      });
+      if (!anyFilled) { showToast('Rate at least one category!', true); return; }
 
-      function getBarReviews(barId) {
-        return reviews
-          .filter((review) => review.bar_id === barId)
-          .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-      }
+      const btn = document.getElementById(`submit-${bar.id}`);
+      btn.textContent = 'Saving…'; btn.disabled = true;
+      const { error } = await sb.from('ratings').insert([row]);
+      btn.textContent = 'Submit Rating'; btn.disabled = false;
+      if (error) { showToast('Error saving — try again', true); return; }
+      showToast('Rating saved ✓');
+      // realtime will trigger reload, but also do it manually for speed
+      await loadAll();
+      setTimeout(() => {
+        const card = document.getElementById(`card-${bar.id}`);
+        if (card) card.classList.add('open');
+      }, 50);
+    });
+  });
+}
 
-      function averageFor(barId, key) {
-        const items = getBarReviews(barId);
-        if (!items.length) return 0;
-        return items.reduce((sum, item) => sum + Number(item[key] || 0), 0) / items.length;
-      }
+function buildBarCard(bar) {
+  const avgs = avgRatings(bar.id);
+  const rs = ratings[bar.id] || [];
 
-      function renderNeighborhoods() {
-        const neighborhoods = [...new Set(bars.map((bar) => bar.neighborhood).filter(Boolean))].sort();
-        filterSelect.innerHTML = '<option value="all">All neighborhoods</option>' + neighborhoods
-          .map((neighborhood) => `<option value="${escapeHtml(neighborhood)}">${escapeHtml(neighborhood)}</option>`)
-          .join('');
-        filterSelect.value = state.neighborhood;
-      }
+  const overallDisplay = avgs
+    ? `<div class="avg-score">${avgs._overall.toFixed(1)}</div>
+       <div class="avg-stars">${scoreToStars(avgs._overall)}</div>
+       <div class="avg-label">${rs.length} rating${rs.length!==1?'s':''}</div>`
+    : `<div class="avg-label" style="font-size:0.73rem;text-align:right;color:var(--muted)">no ratings<br>yet</div>`;
 
-      function filteredBars() {
-        return [...bars]
-          .filter((bar) => {
-            const matchesSearch = `${bar.name} ${bar.neighborhood} ${bar.description || ''}`
-              .toLowerCase()
-              .includes(state.search.toLowerCase());
-            const matchesNeighborhood = state.neighborhood === 'all' || bar.neighborhood === state.neighborhood;
-            return matchesSearch && matchesNeighborhood;
-          })
-          .sort((a, b) => {
-            if (state.sort === 'name') return a.name.localeCompare(b.name);
-            if (state.sort === 'reviews') return getBarReviews(b.id).length - getBarReviews(a.id).length;
-            return averageFor(b.id, 'overall_rating') - averageFor(a.id, 'overall_rating');
-          });
-      }
+  const catInputs = CATEGORIES.map(cat => `
+    <div class="category-item">
+      <div class="cat-label">${cat.label}
+        <span class="cat-score-display" id="score-${bar.id}-${cat.id}">–</span>
+      </div>
+      <div class="star-row" id="stars-${bar.id}-${cat.id}">
+        ${'<span class="star">★</span>'.repeat(5)}
+      </div>
+      <input type="hidden" id="val-${bar.id}-${cat.id}" value="0">
+    </div>
+  `).join('');
 
-      function metricMarkup(barId, key, label) {
-        const avg = averageFor(barId, key);
+  const reviewsHtml = rs.length
+    ? rs.slice().reverse().map(r => {
+        const avg = CATEGORIES.reduce((s,c) => s+(r[c.id]||0), 0) / CATEGORIES.length;
+        const pills = CATEGORIES.filter(c => r[c.id]>0)
+          .map(c => `<span class="review-cat-pill">${c.label.split(' ')[0]} <span>${r[c.id]}/5</span></span>`).join('');
         return `
-          <div class="metric">
-            <div class="metric-label">${escapeHtml(label)}</div>
-            <strong>${avg ? avg.toFixed(1) : '—'} <span class="stars">${avg ? stars(avg) : '☆☆☆☆☆'}</span></strong>
+          <div class="review-item">
+            <div class="review-top">
+              <span class="reviewer-name">${r.reviewer_name || 'Anonymous'}</span>
+              <span class="review-avg">${avg.toFixed(1)} ★</span>
+            </div>
+            <div class="review-cats">${pills}</div>
+            ${r.note ? `<div class="review-note">"${r.note}"</div>` : ''}
+          </div>`;
+      }).join('')
+    : `<div class="no-reviews">No ratings yet — be the first!</div>`;
+
+  const cityTag = [bar.city, bar.neighborhood].filter(Boolean).join(' · ');
+
+  return `
+    <div class="bar-card" id="card-${bar.id}">
+      <div class="bar-header" id="toggle-${bar.id}">
+        <div class="bar-meta">
+          ${cityTag ? `<div class="bar-city-tag">${cityTag}</div>` : ''}
+          <div class="bar-name">${bar.name}</div>
+        </div>
+        <div class="bar-avg">${overallDisplay}</div>
+      </div>
+      ${bar.description ? `<div class="bar-desc">${bar.description}</div>` : ''}
+      <div style="padding:0 24px 16px">
+        <button class="toggle-btn" id="toggleBtn-${bar.id}">
+          Rate &amp; Reviews <em class="toggle-icon">▼</em>
+        </button>
+      </div>
+      <div class="rating-form">
+        <div class="form-title">Your Rating</div>
+        <div style="margin-bottom:14px">
+          <div class="input-group" style="max-width:220px">
+            <label>Your name</label>
+            <input type="text" id="name-${bar.id}" placeholder="e.g. Sofia">
           </div>
-        `;
-      }
+        </div>
+        <div class="categories-grid">${catInputs}</div>
+        <div class="input-group" style="margin-bottom:16px">
+          <label>Notes (optional)</label>
+          <textarea id="note-${bar.id}" placeholder="Anything memorable? Spill..."></textarea>
+        </div>
+        <button class="submit-btn" id="submit-${bar.id}">Submit Rating</button>
+      </div>
+      <div class="reviews-section">
+        <div class="reviews-title">Ratings from the crew</div>
+        ${reviewsHtml}
+      </div>
+    </div>`;
+}
 
-      function reviewMiniPills(review) {
-        return [
-          ['Vibe', review.vibe_rating],
-          ['Music', review.music_rating],
-          ['Drinks', review.drinks_rating],
-          ['Friendly', review.friendliness_rating],
-          ['Access', review.accessibility_rating],
-          ['Flirty', review.flirting_rating]
-        ].map(([label, value]) => `<span class="mini-pill">${escapeHtml(label)} ${Number(value).toFixed(1)}</span>`).join('');
-      }
+// ─── Add Bar ──────────────────────────────────────────────────────────────────
+document.getElementById('openAddBar').addEventListener('click', () => document.getElementById('addBarModal').classList.add('open'));
+document.getElementById('closeAddBar').addEventListener('click', () => document.getElementById('addBarModal').classList.remove('open'));
+document.getElementById('addBarModal').addEventListener('click', e => {
+  if (e.target === document.getElementById('addBarModal')) document.getElementById('addBarModal').classList.remove('open');
+});
 
-      function ratingSelect(name, label) {
-        return `
-          <label>
-            <div class="metric-label">${escapeHtml(label)}</div>
-            <select class="select" name="${escapeHtml(name)}" required>
-              <option value="">Choose</option>
-              <option value="5">5</option>
-              <option value="4">4</option>
-              <option value="3">3</option>
-              <option value="2">2</option>
-              <option value="1">1</option>
-            </select>
-          </label>
-        `;
-      }
+document.getElementById('submitNewBar').addEventListener('click', async () => {
+  const name = document.getElementById('newBarName').value.trim();
+  const city = document.getElementById('newBarCity').value.trim();
+  const hood = document.getElementById('newBarHood').value.trim();
+  const desc = document.getElementById('newBarDesc').value.trim();
+  if (!name || !city) { showToast('Name and city are required', true); return; }
 
-      function barCard(bar) {
-        const barReviews = getBarReviews(bar.id);
-        const overall = averageFor(bar.id, 'overall_rating');
+  const btn = document.getElementById('submitNewBar');
+  btn.textContent = 'Saving…'; btn.disabled = true;
 
-        return `
-          <article class="card">
-            <div class="card-header">
-              <div>
-                <h2>${escapeHtml(bar.name)}</h2>
-                <div class="meta">
-                  <div>${escapeHtml(bar.neighborhood)}</div>
-                  <div>${escapeHtml(bar.description || 'No description yet.')}</div>
-                </div>
-                <div class="link-row">
-                  ${bar.website ? `<a class="tag-link" href="${escapeHtml(bar.website)}" target="_blank" rel="noreferrer">Website</a>` : ''}
-                  ${bar.google_maps_url ? `<a class="tag-link" href="${escapeHtml(bar.google_maps_url)}" target="_blank" rel="noreferrer">Google profile</a>` : ''}
-                  ${bar.google_place_id ? `<span class="tag-link">Place ID: ${escapeHtml(bar.google_place_id)}</span>` : ''}
-                </div>
-              </div>
-              <div class="scorebox">
-                <strong>${overall ? overall.toFixed(1) : '—'}</strong>
-                <span>${barReviews.length} review${barReviews.length === 1 ? '' : 's'}</span>
-              </div>
-            </div>
+  const { error } = await sb.from('bars').insert([{
+    id: Date.now().toString(36) + Math.random().toString(36).slice(2,6),
+    name, city, neighborhood: hood, description: desc,
+    added_at: Date.now()
+  }]);
 
-            <div class="category-grid">
-              ${ratingFields.map((field) => metricMarkup(bar.id, field.key, field.label)).join('')}
-            </div>
+  btn.textContent = 'Add bar'; btn.disabled = false;
+  if (error) { showToast('Error adding bar — try again', true); return; }
 
-            <div class="review-list">
-              ${barReviews.length
-                ? barReviews.slice(0, 4).map((review) => `
-                  <div class="review">
-                    <div class="review-top">
-                      <strong>${escapeHtml(review.reviewer_name)}</strong>
-                      <span class="stars">${stars(review.overall_rating)}</span>
-                    </div>
-                    <div>${escapeHtml(review.comment || 'No written comment.')}</div>
-                    <div class="mini-ratings">${reviewMiniPills(review)}</div>
-                    <div class="review-meta">${formatDate(review.created_at)}</div>
-                  </div>
-                `).join('')
-                : '<div class="empty">No ratings yet. Be the first to describe the vibe.</div>'}
-            </div>
+  document.getElementById('addBarModal').classList.remove('open');
+  ['newBarName','newBarCity','newBarHood','newBarDesc'].forEach(id => document.getElementById(id).value = '');
+  showToast(`${name} added ✓`);
+  await loadAll();
+});
 
-            <form class="review-form" data-bar-id="${bar.id}">
-              <div class="row-2">
-                <input class="input" name="reviewer_name" type="text" placeholder="Your name" maxlength="40" required />
-                <select class="select" name="overall_rating" required>
-                  <option value="">Overall rating</option>
-                  <option value="5">5 - obsessed</option>
-                  <option value="4">4 - loved it</option>
-                  <option value="3">3 - good</option>
-                  <option value="2">2 - mixed</option>
-                  <option value="1">1 - not for me</option>
-                </select>
-              </div>
-              <div class="ratings-grid">
-                ${ratingSelect('vibe_rating', 'Vibe')}
-                ${ratingSelect('music_rating', 'Music')}
-                ${ratingSelect('drinks_rating', 'Drinks')}
-                ${ratingSelect('friendliness_rating', 'Friendliness')}
-                ${ratingSelect('accessibility_rating', 'Accessibility')}
-                ${ratingSelect('flirting_rating', 'Meet-cute energy')}
-              </div>
-              <textarea class="textarea" name="comment" placeholder="Tell people about the crowd, safety, queerness, music, how easy it was to meet people, or anything else useful."></textarea>
-              <button class="button" type="submit">Submit rating</button>
-            </form>
-          </article>
-        `;
-      }
+// ─── Search & Sort ────────────────────────────────────────────────────────────
+document.getElementById('searchInput').addEventListener('input', e => { searchQuery = e.target.value; renderAll(); });
+document.getElementById('sortSelect').addEventListener('change', e => { sortMode = e.target.value; renderAll(); });
 
-      function render() {
-        const items = filteredBars();
-        if (!items.length) {
-          barsGrid.innerHTML = '<div class="empty">No bars match your search yet.</div>';
-          return;
-        }
-        barsGrid.innerHTML = items.map(barCard).join('');
-        attachFormListeners();
-      }
+// ─── Toast ────────────────────────────────────────────────────────────────────
+function showToast(msg, err=false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.background = err ? '#c0392b' : 'var(--accent)';
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2400);
+}
 
-      function attachFormListeners() {
-        document.querySelectorAll('.review-form').forEach((form) => {
-          form.addEventListener('submit', async (event) => {
-            event.preventDefault();
-            if (!supabase) return;
-
-            const submitButton = form.querySelector('button');
-            submitButton.disabled = true;
-            submitButton.textContent = 'Submitting...';
-
-            const formData = new FormData(form);
-            const payload = {
-              bar_id: Number(form.dataset.barId),
-              reviewer_name: String(formData.get('reviewer_name') || '').trim(),
-              overall_rating: Number(formData.get('overall_rating')),
-              vibe_rating: Number(formData.get('vibe_rating')),
-              music_rating: Number(formData.get('music_rating')),
-              drinks_rating: Number(formData.get('drinks_rating')),
-              friendliness_rating: Number(formData.get('friendliness_rating')),
-              accessibility_rating: Number(formData.get('accessibility_rating')),
-              flirting_rating: Number(formData.get('flirting_rating')),
-              comment: String(formData.get('comment') || '').trim()
-            };
-
-            const missingRequired = !payload.reviewer_name || ratingFields.some((field) => !payload[field.key]);
-            if (missingRequired) {
-              setStatus('Please add your name and complete all rating categories.', true);
-              submitButton.disabled = false;
-              submitButton.textContent = 'Submit rating';
-              return;
-            }
-
-            const { error } = await supabase.from('reviews').insert(payload);
-            if (error) {
-              setStatus(`Could not save review: ${error.message}`, true);
-            } else {
-              setStatus('Rating added successfully.');
-              form.reset();
-              await loadData();
-            }
-
-            submitButton.disabled = false;
-            submitButton.textContent = 'Submit rating';
-          });
-        });
-      }
-
-      async function loadData() {
-        if (!SUPABASE_URL.startsWith('http') || SUPABASE_ANON_KEY === 'YOUR_SUPABASE_ANON_KEY') {
-          setStatus('Add your Supabase URL and anon key in the code to make the site live.', true);
-          bars = [
-            {
-              id: 1,
-              name: 'Example Bar 1',
-              neighborhood: 'Centrum',
-              description: 'Cozy dance floor, soft lighting, and an easygoing crowd.',
-              website: 'https://example.com',
-              google_maps_url: 'https://maps.google.com/?cid=example',
-              google_place_id: 'examplePlaceId1'
-            },
-            {
-              id: 2,
-              name: 'Example Bar 2',
-              neighborhood: 'De Pijp',
-              description: 'Cocktails, themed nights, and chatty corners.',
-              website: 'https://example.com',
-              google_maps_url: 'https://maps.google.com/?cid=example',
-              google_place_id: 'examplePlaceId2'
-            }
-          ];
-          reviews = [
-            {
-              id: 1,
-              bar_id: 1,
-              reviewer_name: 'Alex',
-              overall_rating: 5,
-              vibe_rating: 5,
-              music_rating: 4,
-              drinks_rating: 4,
-              friendliness_rating: 5,
-              accessibility_rating: 3,
-              flirting_rating: 5,
-              comment: 'Warm crowd and very easy to meet people.',
-              created_at: new Date().toISOString()
-            },
-            {
-              id: 2,
-              bar_id: 2,
-              reviewer_name: 'Sam',
-              overall_rating: 4,
-              vibe_rating: 4,
-              music_rating: 5,
-              drinks_rating: 4,
-              friendliness_rating: 4,
-              accessibility_rating: 3,
-              flirting_rating: 4,
-              comment: 'Great music and fun late-night energy.',
-              created_at: new Date().toISOString()
-            }
-          ];
-          renderNeighborhoods();
-          render();
-          return;
-        }
-
-        supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-        const [{ data: barsData, error: barsError }, { data: reviewsData, error: reviewsError }] = await Promise.all([
-          supabase.from('bars').select('*').order('name', { ascending: true }),
-          supabase.from('reviews').select('*').order('created_at', { ascending: false })
-        ]);
-
-        if (barsError || reviewsError) {
-          setStatus(`Could not load data: ${barsError?.message || reviewsError?.message}`, true);
-          return;
-        }
-
-        bars = barsData || [];
-        reviews = reviewsData || [];
-        setStatus(`Loaded ${bars.length} bar${bars.length === 1 ? '' : 's'} and ${reviews.length} rating${reviews.length === 1 ? '' : 's'}.`);
-        renderNeighborhoods();
-        render();
-      }
-
-      searchInput.addEventListener('input', (event) => {
-        state.search = event.target.value;
-        render();
-      });
-
-      sortSelect.addEventListener('change', (event) => {
-        state.sort = event.target.value;
-        render();
-      });
-
-      filterSelect.addEventListener('change', (event) => {
-        state.neighborhood = event.target.value;
-        render();
-      });
-
-      loadData();
-    </script>
-  </body>
+// ─── Init ─────────────────────────────────────────────────────────────────────
+loadAll();
+subscribeRealtime();
+</script>
+</body>
 </html>
