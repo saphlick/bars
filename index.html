@@ -73,7 +73,7 @@
 
   /* TOOLBAR */
   .toolbar { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: 28px; }
-  @media (max-width: 600px) { .search-wrap { flex: 1; min-width: 0; } .sort-select { font-size: 0.75rem; padding: 10px 10px; flex-shrink: 0; } .add-bar-btn { width: 100%; } .toolbar { flex-wrap: wrap; } .search-wrap input::placeholder { color: transparent; } .search-wrap input:focus::placeholder { color: var(--muted); } }
+  @media (max-width: 600px) { .search-wrap { flex: 1; min-width: 0; } .sort-select { font-size: 0.75rem; padding: 10px 8px; flex-shrink: 0; } .add-bar-btn { width: 100%; } .toolbar { flex-wrap: wrap; } .search-wrap input::placeholder { color: transparent; } .search-wrap input:focus::placeholder { color: var(--muted); } }
   .search-wrap { flex: 1; min-width: 200px; position: relative; }
   .search-wrap input {
     width: 100%; background: var(--card); border: 1px solid var(--border); border-radius: 100px;
@@ -253,11 +253,16 @@
       <option value="az">A – Z</option>
       <option value="mostrated">Most rated</option>
     </select>
+    <select class="sort-select" id="countrySelect">
+      <option value="all">All countries</option>
+    </select>
+    <select class="sort-select" id="citySelect">
+      <option value="all">All cities</option>
+    </select>
     <button class="add-bar-btn" id="openAddBar">+ Add a bar</button>
   </div>
 
-  <div class="city-filters" id="countryFilters"></div>
-  <div class="city-filters" id="cityFilters"></div>
+
 
   <div id="leaderboardSection" style="display:none">
     <div class="section-title">Top picks</div>
@@ -454,33 +459,18 @@ function renderAll() {
 
 function renderCountryFilters() {
   const countries = allCountries();
-  const el = document.getElementById('countryFilters');
-  if (countries.length === 0) { el.innerHTML = ''; return; }
-  el.innerHTML = `
-    <span class="city-label">Country</span>
-    <button class="city-pill${activeCountryFilter==='all'?' active':''}" data-country="all">All</button>
-    ${countries.map(c => `<button class="city-pill${activeCountryFilter===c?' active':''}" data-country="${c}">${c}</button>`).join('')}
-  `;
-  el.querySelectorAll('.city-pill').forEach(btn =>
-    btn.addEventListener('click', () => {
-      activeCountryFilter = btn.dataset.country;
-      activeCityFilter = 'all'; // reset city when country changes
-      renderAll();
-    })
-  );
+  const sel = document.getElementById('countrySelect');
+  const current = sel.value;
+  sel.innerHTML = '<option value="all">All countries</option>' +
+    countries.map(c => `<option value="${c}"${c===current?' selected':''}>${c}</option>`).join('');
 }
 
 function renderCityFilters() {
   const cities = allCities();
-  const el = document.getElementById('cityFilters');
-  el.innerHTML = `
-    <span class="city-label">City</span>
-    <button class="city-pill${activeCityFilter==='all'?' active':''}" data-city="all">All</button>
-    ${cities.map(c => `<button class="city-pill${activeCityFilter===c?' active':''}" data-city="${c}">${c}</button>`).join('')}
-  `;
-  el.querySelectorAll('.city-pill').forEach(btn =>
-    btn.addEventListener('click', () => { activeCityFilter = btn.dataset.city; renderAll(); })
-  );
+  const sel = document.getElementById('citySelect');
+  const current = sel.value;
+  sel.innerHTML = '<option value="all">All cities</option>' +
+    cities.map(c => `<option value="${c}"${c===current?' selected':''}>${c}</option>`).join('');
 }
 
 function renderLeaderboard(list) {
@@ -681,6 +671,16 @@ document.getElementById('submitNewBar').addEventListener('click', async () => {
 // ─── Search & Sort ────────────────────────────────────────────────────────────
 document.getElementById('searchInput').addEventListener('input', e => { searchQuery = e.target.value; renderAll(); });
 document.getElementById('sortSelect').addEventListener('change', e => { sortMode = e.target.value; renderAll(); });
+document.getElementById('countrySelect').addEventListener('change', e => {
+  activeCountryFilter = e.target.value;
+  activeCityFilter = 'all';
+  document.getElementById('citySelect').value = 'all';
+  renderAll();
+});
+document.getElementById('citySelect').addEventListener('change', e => {
+  activeCityFilter = e.target.value;
+  renderAll();
+});
 
 // ─── Toast ────────────────────────────────────────────────────────────────────
 function showToast(msg, err=false) {
