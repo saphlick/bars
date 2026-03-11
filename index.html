@@ -284,6 +284,9 @@
       <select class="sort-select" id="countrySelect">
         <option value="all">All countries</option>
       </select>
+      <select class="sort-select" id="stateSelect" style="display:none;">
+        <option value="all">All states</option>
+      </select>
       <select class="sort-select" id="citySelect">
         <option value="all">All cities</option>
       </select>
@@ -448,6 +451,7 @@ const CATEGORIES = [
 let bars = [];
 let ratings = {}; // barId -> array of rating rows
 let activeCountryFilter = 'all';
+let activeStateFilter = 'all';
 let activeCityFilter = 'all';
 let searchQuery = '';
 let sortMode = 'rating';
@@ -516,15 +520,22 @@ function allCountries() {
   return [...new Set(bars.map(b => b.country).filter(Boolean))].sort();
 }
 
+function allStates() {
+  let list = bars.filter(b => b.country === 'United States');
+  return [...new Set(list.map(b => b.state).filter(Boolean))].sort();
+}
+
 function allCities() {
   let list = bars;
   if (activeCountryFilter !== 'all') list = list.filter(b => b.country === activeCountryFilter);
+  if (activeStateFilter !== 'all') list = list.filter(b => b.state === activeStateFilter);
   return [...new Set(list.map(b => b.city).filter(Boolean))].sort();
 }
 
 function filteredBars() {
   let list = [...bars];
   if (activeCountryFilter !== 'all') list = list.filter(b => b.country === activeCountryFilter);
+  if (activeStateFilter !== 'all') list = list.filter(b => b.state === activeStateFilter);
   if (activeCityFilter !== 'all') list = list.filter(b => b.city === activeCityFilter);
   if (searchQuery) {
     const q = searchQuery.toLowerCase();
@@ -554,6 +565,7 @@ function filteredBars() {
 // ─── Render ───────────────────────────────────────────────────────────────────
 function renderAll() {
   renderCountryFilters();
+  renderStateFilter();
   renderCityFilters();
   const list = filteredBars();
   renderLeaderboard(list);
@@ -567,6 +579,19 @@ function renderCountryFilters() {
   const current = sel.value;
   sel.innerHTML = '<option value="all">All countries</option>' +
     countries.map(c => `<option value="${c}"${c===current?' selected':''}>${c}</option>`).join('');
+}
+
+function renderStateFilter() {
+  const sel = document.getElementById('stateSelect');
+  if (activeCountryFilter !== 'United States') {
+    sel.style.display = 'none';
+    return;
+  }
+  const states = allStates();
+  const current = sel.value;
+  sel.innerHTML = '<option value="all">All states</option>' +
+    states.map(s => `<option value="${s}"${s===current?' selected':''}>${s}</option>`).join('');
+  sel.style.display = states.length ? '' : 'none';
 }
 
 function renderCityFilters() {
@@ -788,6 +813,14 @@ document.getElementById('searchInput').addEventListener('input', e => { searchQu
 document.getElementById('sortSelect').addEventListener('change', e => { sortMode = e.target.value; renderAll(); });
 document.getElementById('countrySelect').addEventListener('change', e => {
   activeCountryFilter = e.target.value;
+  activeStateFilter = 'all';
+  activeCityFilter = 'all';
+  document.getElementById('stateSelect').value = 'all';
+  document.getElementById('citySelect').value = 'all';
+  renderAll();
+});
+document.getElementById('stateSelect').addEventListener('change', e => {
+  activeStateFilter = e.target.value;
   activeCityFilter = 'all';
   document.getElementById('citySelect').value = 'all';
   renderAll();
