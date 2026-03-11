@@ -33,7 +33,7 @@
       radial-gradient(ellipse 50% 50% at 85% 80%, rgba(176,111,216,0.14) 0%, transparent 60%);
     pointer-events: none; z-index: 0;
   }
-  .container { max-width: 900px; margin: 0 auto; padding: 0 24px 80px; position: relative; z-index: 1; }
+  .container { max-width: 900px; margin: 0 auto; padding: 0 24px 24px; position: relative; z-index: 1; }
 
   /* HEADER */
   header { text-align: center; padding: 64px 0 48px; }
@@ -99,7 +99,7 @@
   .section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
 
   /* LEADERBOARD */
-  .leaderboard { display: grid; grid-template-columns: repeat(auto-fill, minmax(148px, 1fr)); gap: 10px; margin-bottom: 52px; }
+  .leaderboard { display: grid; grid-template-columns: repeat(auto-fill, minmax(148px, 1fr)); gap: 10px; margin-bottom: 32px; }
   .lb-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 16px; text-align: center; transition: border-color 0.2s; }
   .lb-card:hover { border-color: rgba(176,111,216,0.4); }
   .lb-rank { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--muted); margin-bottom: 4px; }
@@ -193,7 +193,7 @@
   #toast.show { transform: translateX(-50%) translateY(0); }
 
   /* MAP */
-  #mapSection { margin-bottom: 52px; }
+  #mapSection { margin-top: 0; }
   #map {
     width: 100%; height: 380px; border-radius: 16px;
     border: 1px solid var(--border); overflow: hidden;
@@ -251,17 +251,16 @@
     <div class="empty-state"><div class="big">Loading…</div></div>
   </div>
 
-  <footer style="margin-top:52px">
-    made with <span style="color:var(--accent)">♥</span> for the crew · saphlick
-  </footer>
 </div>
 
 <div id="toast"></div>
 
 <!-- MAP -->
 <div id="mapSection" style="display:none">
-  <div class="section-title">Map</div>
   <div id="map"></div>
+  <div style="text-align:center;color:var(--muted);font-size:0.78rem;padding:20px 0 32px;letter-spacing:0.08em">
+    made with <span style="color:var(--accent)">♥</span> for the crew · saphlick
+  </div>
 </div>
 
 <!-- ADD BAR MODAL -->
