@@ -54,7 +54,7 @@
   .container { max-width: 900px; margin: 0 auto; padding: 0 24px 24px; position: relative; z-index: 1; }
 
   /* HEADER */
-  header { text-align: center; padding: 48px 0 24px; }
+  header { text-align: center; padding: 36px 0 20px; }
   .logo {
     font-family: 'Playfair Display', serif;
     font-size: clamp(3rem, 8vw, 5.5rem); font-weight: 700; letter-spacing: -0.02em;
@@ -63,7 +63,6 @@
     line-height: 1; margin-bottom: 10px;
   }
   .tagline { color: var(--muted); font-size: 0.9rem; letter-spacing: 0.18em; text-transform: uppercase; margin-bottom: 36px; }
-  .header-divider { width: 120px; height: 1px; background: linear-gradient(90deg, transparent, var(--accent2), transparent); margin: 0 auto 40px; }
 
   /* SYNC DOT */
   .sync-dot { width: 7px; height: 7px; border-radius: 50%; background: #3a2f4a; display: inline-block; margin-left: 8px; vertical-align: middle; transition: background 0.3s; }
@@ -75,14 +74,15 @@
   /* TOOLBAR */
   .toolbar { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: 28px; }
   @media (max-width: 600px) {
-    .toolbar { flex-wrap: wrap; }
+    .toolbar { flex-wrap: wrap; gap: 8px; }
     .search-wrap { flex: 1; min-width: 0; order: 1; }
     .search-wrap input::placeholder { color: transparent; }
     .search-wrap input:focus::placeholder { color: var(--muted); }
     #sortSelect { order: 1; font-size: 0.75rem; padding: 10px 8px; flex-shrink: 0; }
-    #countrySelect { order: 2; flex: 1; font-size: 0.75rem; padding: 10px 8px; }
-    #citySelect { order: 2; flex: 1; font-size: 0.75rem; padding: 10px 8px; }
-    .add-bar-btn { order: 3; width: 100%; }
+    #countrySelect, #citySelect { font-size: 0.78rem; padding: 9px 10px; flex: 1; }
+    .filter-toggle-btn { display: inline-flex !important; }
+    #filterRow { display: none; width: 100%; }
+    #filterRow.open { display: flex !important; gap: 8px; }
   }
   .search-wrap { flex: 1; min-width: 200px; position: relative; }
   .search-wrap input {
@@ -219,6 +219,20 @@
   #toast { position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(80px); background: var(--accent); color: #fff; padding: 12px 28px; border-radius: 100px; font-size: 0.88rem; z-index: 999; transition: transform 0.3s ease; pointer-events: none; white-space: nowrap; }
   #toast.show { transform: translateX(-50%) translateY(0); }
 
+  .header-divider { width: 120px; height: 1px; background: linear-gradient(90deg, transparent, var(--accent2), transparent); margin: 0 auto 20px; }
+
+  /* FAB */
+  .fab {
+    position: fixed; bottom: 28px; right: 28px; z-index: 100;
+    width: 56px; height: 56px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #fff; border: none; font-size: 1.8rem; line-height: 1;
+    cursor: pointer; box-shadow: 0 4px 20px rgba(230,63,110,0.45);
+    transition: transform 0.2s, box-shadow 0.2s;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .fab:hover { transform: scale(1.1); box-shadow: 0 6px 28px rgba(230,63,110,0.6); }
+
   /* MAP */
   #mapSection { margin-top: 0; }
   #map {
@@ -263,13 +277,16 @@
       <option value="az">A – Z</option>
       <option value="mostrated">Most rated</option>
     </select>
-    <select class="sort-select" id="countrySelect">
-      <option value="all">All countries</option>
-    </select>
-    <select class="sort-select" id="citySelect">
-      <option value="all">All cities</option>
-    </select>
-    <button class="add-bar-btn" id="openAddBar">+ Add a bar</button>
+    <button class="sort-select filter-toggle-btn" id="filterToggle" style="display:none;cursor:pointer;background:var(--card);border:1px solid var(--border);color:var(--muted)">⚙ Filter</button>
+    <div id="filterRow" style="display:flex;gap:8px;flex-wrap:wrap;">
+      <select class="sort-select" id="countrySelect">
+        <option value="all">All countries</option>
+      </select>
+      <select class="sort-select" id="citySelect">
+        <option value="all">All cities</option>
+      </select>
+    </div>
+
   </div>
 
 
@@ -286,6 +303,7 @@
 
 </div>
 
+<button class="fab" id="openAddBar">+</button>
 <div id="toast"></div>
 
 <!-- MAP -->
@@ -690,6 +708,9 @@ document.getElementById('countrySelect').addEventListener('change', e => {
 document.getElementById('citySelect').addEventListener('change', e => {
   activeCityFilter = e.target.value;
   renderAll();
+});
+document.getElementById('filterToggle').addEventListener('click', () => {
+  document.getElementById('filterRow').classList.toggle('open');
 });
 
 // ─── Toast ────────────────────────────────────────────────────────────────────
