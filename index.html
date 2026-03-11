@@ -80,7 +80,7 @@
     .search-wrap input:focus::placeholder { color: var(--muted); }
     #sortSelect { order: 1; font-size: 0.75rem; padding: 10px 8px; flex-shrink: 0; }
     #countrySelect, #citySelect { font-size: 0.78rem; padding: 9px 10px; flex: 1; }
-    #filterRow { display: flex; gap: 8px; width: 100%; }
+    #filterRow { display: flex; gap: 8px; width: 100%; flex-wrap: wrap; }
   }
   .search-wrap { flex: 1; min-width: 200px; position: relative; }
   .search-wrap input {
@@ -280,7 +280,7 @@
       <option value="az">A – Z</option>
       <option value="mostrated">Most rated</option>
     </select>
-    <div id="filterRow" style="display:flex;gap:8px;flex-wrap:wrap;width:100%;">
+    <div id="filterRow" style="display:flex;gap:8px;">
       <select class="sort-select" id="countrySelect">
         <option value="all">All countries</option>
       </select>
