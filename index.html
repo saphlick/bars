@@ -256,6 +256,7 @@
     <button class="add-bar-btn" id="openAddBar">+ Add a bar</button>
   </div>
 
+  <div class="city-filters" id="countryFilters"></div>
   <div class="city-filters" id="cityFilters"></div>
 
   <div id="leaderboardSection" style="display:none">
@@ -288,6 +289,10 @@
       <div class="input-group full">
         <label>Bar name *</label>
         <input type="text" id="newBarName" placeholder="e.g. Taboo Bar">
+      </div>
+      <div class="input-group">
+        <label>Country *</label>
+        <input type="text" id="newBarCountry" placeholder="e.g. Netherlands">
       </div>
       <div class="input-group">
         <label>City *</label>
@@ -334,6 +339,7 @@ const CATEGORIES = [
 // State
 let bars = [];
 let ratings = {}; // barId -> array of rating rows
+let activeCountryFilter = 'all';
 let activeCityFilter = 'all';
 let searchQuery = '';
 let sortMode = 'rating';
@@ -398,12 +404,19 @@ function scoreToStars(n) {
   return '★'.repeat(f) + '☆'.repeat(5 - f);
 }
 
+function allCountries() {
+  return [...new Set(bars.map(b => b.country).filter(Boolean))].sort();
+}
+
 function allCities() {
-  return [...new Set(bars.map(b => b.city).filter(Boolean))].sort();
+  let list = bars;
+  if (activeCountryFilter !== 'all') list = list.filter(b => b.country === activeCountryFilter);
+  return [...new Set(list.map(b => b.city).filter(Boolean))].sort();
 }
 
 function filteredBars() {
   let list = [...bars];
+  if (activeCountryFilter !== 'all') list = list.filter(b => b.country === activeCountryFilter);
   if (activeCityFilter !== 'all') list = list.filter(b => b.city === activeCityFilter);
   if (searchQuery) {
     const q = searchQuery.toLowerCase();
@@ -431,11 +444,30 @@ function filteredBars() {
 
 // ─── Render ───────────────────────────────────────────────────────────────────
 function renderAll() {
+  renderCountryFilters();
   renderCityFilters();
   const list = filteredBars();
   renderLeaderboard(list);
   renderMap(list);
   renderBars(list);
+}
+
+function renderCountryFilters() {
+  const countries = allCountries();
+  const el = document.getElementById('countryFilters');
+  if (countries.length <= 1) { el.innerHTML = ''; return; }
+  el.innerHTML = `
+    <span class="city-label">Country</span>
+    <button class="city-pill${activeCountryFilter==='all'?' active':''}" data-country="all">All</button>
+    ${countries.map(c => `<button class="city-pill${activeCountryFilter===c?' active':''}" data-country="${c}">${c}</button>`).join('')}
+  `;
+  el.querySelectorAll('.city-pill').forEach(btn =>
+    btn.addEventListener('click', () => {
+      activeCountryFilter = btn.dataset.country;
+      activeCityFilter = 'all'; // reset city when country changes
+      renderAll();
+    })
+  );
 }
 
 function renderCityFilters() {
@@ -566,7 +598,7 @@ function buildBarCard(bar) {
       }).join('')
     : `<div class="no-reviews">No ratings yet — be the first!</div>`;
 
-  const cityTag = [bar.city, bar.neighborhood].filter(Boolean).join(' · ');
+  const cityTag = [bar.country, bar.city, bar.neighborhood].filter(Boolean).join(' · ');
 
   return `
     <div class="bar-card" id="card-${bar.id}">
@@ -617,7 +649,8 @@ document.getElementById('submitNewBar').addEventListener('click', async () => {
   const city = document.getElementById('newBarCity').value.trim();
   const hood = document.getElementById('newBarHood').value.trim();
   const desc = document.getElementById('newBarDesc').value.trim();
-  if (!name || !city) { showToast('Name and city are required', true); return; }
+  const country = document.getElementById('newBarCountry').value.trim();
+  if (!name || !city || !country) { showToast('Name, country and city are required', true); return; }
 
   const address = document.getElementById('newBarAddress').value.trim();
   const btn = document.getElementById('submitNewBar');
@@ -632,7 +665,7 @@ document.getElementById('submitNewBar').addEventListener('click', async () => {
 
   const { error } = await sb.from('bars').insert([{
     id: Date.now().toString(36) + Math.random().toString(36).slice(2,6),
-    name, city, neighborhood: hood, description: desc, address, lat, lng,
+    name, country, city, neighborhood: hood, description: desc, address, lat, lng,
     added_at: Date.now()
   }]);
 
@@ -640,7 +673,7 @@ document.getElementById('submitNewBar').addEventListener('click', async () => {
   if (error) { showToast('Error adding bar — try again', true); return; }
 
   document.getElementById('addBarModal').classList.remove('open');
-  ['newBarName','newBarCity','newBarHood','newBarAddress','newBarDesc'].forEach(id => document.getElementById(id).value = '');
+  ['newBarName','newBarCountry','newBarCity','newBarHood','newBarAddress','newBarDesc'].forEach(id => document.getElementById(id).value = '');
   showToast(`${name} added ✓`);
   await loadAll();
 });
