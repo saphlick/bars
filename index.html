@@ -54,6 +54,7 @@
 
   /* TOOLBAR */
   .toolbar { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: 28px; }
+  @media (max-width: 600px) { .search-wrap { min-width: 100%; order: 1; } .sort-select { flex: 1; order: 2; } .add-bar-btn { order: 2; width: 100%; } }
   .search-wrap { flex: 1; min-width: 200px; position: relative; }
   .search-wrap input {
     width: 100%; background: var(--card); border: 1px solid var(--border); border-radius: 100px;
@@ -109,8 +110,9 @@
   .bar-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; transition: border-color 0.2s, transform 0.2s; }
   .bar-card:hover { border-color: rgba(176,111,216,0.4); transform: translateY(-2px); }
   .bar-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; padding: 22px 24px 0; cursor: pointer; user-select: none; }
+  @media (max-width: 480px) { .bar-header { gap: 10px; } .avg-score { font-size: 1.6rem; } .bar-name { font-size: 1.2rem; } }
   .bar-meta { flex: 1; }
-  .bar-city-tag { display: inline-block; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.13em; color: var(--accent2); background: rgba(176,111,216,0.1); border-radius: 100px; padding: 2px 10px; margin-bottom: 6px; }
+  .bar-city-tag { display: inline-block; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.13em; color: var(--accent2); background: rgba(176,111,216,0.1); border-radius: 100px; padding: 2px 10px; margin-bottom: 6px; white-space: normal; word-break: break-word; max-width: 100%; }
   .bar-name { font-family: 'Playfair Display', serif; font-size: 1.4rem; font-weight: 700; color: var(--text); line-height: 1.2; }
   .bar-desc { font-size: 0.87rem; color: var(--muted); line-height: 1.65; padding: 8px 24px 16px; font-style: italic; }
   .bar-avg { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; flex-shrink: 0; }
