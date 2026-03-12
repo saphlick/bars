@@ -296,6 +296,7 @@
   <header>
     <div class="logo" onclick="window.location.reload()" style="cursor:pointer;">saphlick</div>
     <div class="tagline">queer bar ratings <span class="sync-dot loading" id="syncDot"></span></div>
+    <div id="barCount" style="font-size:0.78rem;color:var(--muted);margin-bottom:12px;letter-spacing:0.08em;"></div>
     <div class="header-divider"></div>
   </header>
 
@@ -608,6 +609,11 @@ function renderLeaderboard(list) {
 }
 
 function renderBars(list) {
+  const countEl = document.getElementById('barCount');
+  if (countEl) {
+    const total = list.length;
+    countEl.textContent = total === 1 ? '1 bar' : `${total} bars`;
+  }
   const el = document.getElementById('barsList');
   if (!list.length) {
     el.innerHTML = `<div class="empty-state"><div class="big">Nothing here yet</div><p>Be the first to add a bar!</p></div>`;
