@@ -783,7 +783,7 @@ document.getElementById('submitNewBar').addEventListener('click', async () => {
     return sameName || sameAddr;
   });
   if (duplicate) {
-    showToast(`"${duplicate.name}" in ${duplicate.city} already exists!`, true);
+    showToast(`"${duplicate.name}" is already on saphlick — go leave a review!`, false);
     return;
   }
   if (country.toLowerCase() === 'united states' && !state) { showToast('Please select a state', true); return; }
