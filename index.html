@@ -430,12 +430,10 @@
         <option value="Vietnam">Vietnam</option>
         </select>
       </div>
-      <div class="input-group full" id="stateGroup" style="display:none;">
+      <div class="input-group autocomplete-wrap" id="stateGroup" style="display:none;">
         <label>State *</label>
-        <select id="newBarState" style="background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.9rem;padding:10px 14px;width:100%;outline:none;">
-          <option value="">Select a state...</option>
-          <option>Alabama</option><option>Alaska</option><option>Arizona</option><option>Arkansas</option><option>California</option><option>Colorado</option><option>Connecticut</option><option>Delaware</option><option>Florida</option><option>Georgia</option><option>Hawaii</option><option>Idaho</option><option>Illinois</option><option>Indiana</option><option>Iowa</option><option>Kansas</option><option>Kentucky</option><option>Louisiana</option><option>Maine</option><option>Maryland</option><option>Massachusetts</option><option>Michigan</option><option>Minnesota</option><option>Mississippi</option><option>Missouri</option><option>Montana</option><option>Nebraska</option><option>Nevada</option><option>New Hampshire</option><option>New Jersey</option><option>New Mexico</option><option>New York</option><option>North Carolina</option><option>North Dakota</option><option>Ohio</option><option>Oklahoma</option><option>Oregon</option><option>Pennsylvania</option><option>Rhode Island</option><option>South Carolina</option><option>South Dakota</option><option>Tennessee</option><option>Texas</option><option>Utah</option><option>Vermont</option><option>Virginia</option><option>Washington</option><option>West Virginia</option><option>Wisconsin</option><option>Wyoming</option>
-        </select>
+        <input type="text" id="newBarState" placeholder="e.g. New York" autocomplete="off">
+        <div class="autocomplete-list" id="stateSuggestions" style="display:none;"></div>
       </div>
       <div class="input-group">
         <label>City *</label>
@@ -816,9 +814,10 @@ function buildBarCard(bar) {
 // ─── Add Bar ──────────────────────────────────────────────────────────────────
 document.getElementById('openAddBar').addEventListener('click', () => document.getElementById('addBarModal').classList.add('open'));
 document.getElementById('closeAddBar').addEventListener('click', () => document.getElementById('addBarModal').classList.remove('open'));
-document.getElementById('newBarCountry').addEventListener('change', e => {
+document.getElementById('newBarCountry').addEventListener('input', e => {
   const stateGroup = document.getElementById('stateGroup');
-  stateGroup.style.display = e.target.value === 'United States' ? 'block' : 'none';
+  const val = e.target.value.trim();
+  stateGroup.style.display = val.toLowerCase() === 'united states' ? 'block' : 'none';
   document.getElementById('newBarState').value = '';
 });
 
@@ -834,7 +833,7 @@ document.getElementById('submitNewBar').addEventListener('click', async () => {
   const country = document.getElementById('newBarCountry').value.trim();
   const state = document.getElementById('newBarState').value.trim();
   if (!name || !city || !country) { showToast('Name, country and city are required', true); return; }
-  if (country === 'United States' && !state) { showToast('Please select a state', true); return; }
+  if (country.toLowerCase() === 'united states' && !state) { showToast('Please select a state', true); return; }
 
   const address = document.getElementById('newBarAddress').value.trim();
   const btn = document.getElementById('submitNewBar');
@@ -852,7 +851,7 @@ document.getElementById('submitNewBar').addEventListener('click', async () => {
 
   const { error } = await sb.from('bars').insert([{
     id: Date.now().toString(36) + Math.random().toString(36).slice(2,6),
-    name, country, state: country === 'United States' ? state : null, city, neighborhood: hood, description: desc, address, lat, lng,
+    name, country, state: country.toLowerCase() === 'united states' ? state : null, city, neighborhood: hood, description: desc, address, lat, lng,
     added_at: Date.now()
   }]);
 
@@ -1046,6 +1045,41 @@ async function autoDetectLocation() {
 }
 
 
+
+// ─── Country autocomplete ─────────────────────────────────────────────────────
+const COUNTRIES = ['Afghanistan','Albania','Algeria','Argentina','Australia','Austria','Belgium','Bolivia','Brazil','Canada','Chile','China','Colombia','Croatia','Czech Republic','Denmark','Ecuador','Egypt','Finland','France','Germany','Greece','Hungary','India','Indonesia','Ireland','Israel','Italy','Japan','Jordan','Kenya','South Korea','Lebanon','Malaysia','Mexico','Morocco','Netherlands','New Zealand','Nigeria','Norway','Pakistan','Peru','Philippines','Poland','Portugal','Romania','Russia','Saudi Arabia','Serbia','Singapore','South Africa','Spain','Sweden','Switzerland','Taiwan','Thailand','Turkey','Ukraine','United Arab Emirates','United Kingdom','United States','Uruguay','Venezuela','Vietnam'];
+
+const US_STATES = ['Alabama','Alaska','Arizona','Arkansas','California','Colorado','Connecticut','Delaware','Florida','Georgia','Hawaii','Idaho','Illinois','Indiana','Iowa','Kansas','Kentucky','Louisiana','Maine','Maryland','Massachusetts','Michigan','Minnesota','Mississippi','Missouri','Montana','Nebraska','Nevada','New Hampshire','New Jersey','New Mexico','New York','North Carolina','North Dakota','Ohio','Oklahoma','Oregon','Pennsylvania','Rhode Island','South Carolina','South Dakota','Tennessee','Texas','Utah','Vermont','Virginia','Washington','West Virginia','Wisconsin','Wyoming'];
+
+function setupListAC(inputId, listId, items, onSelect) {
+  const input = document.getElementById(inputId);
+  const list = document.getElementById(listId);
+  input.addEventListener('input', () => {
+    const q = input.value.trim().toLowerCase();
+    if (!q) { list.style.display = 'none'; return; }
+    const matches = items.filter(i => i.toLowerCase().startsWith(q)).slice(0, 6);
+    if (!matches.length) { list.style.display = 'none'; return; }
+    list.innerHTML = matches.map(m => `<div class="autocomplete-item"><div class="ac-main">${m}</div></div>`).join('');
+    list.style.display = 'block';
+    list.querySelectorAll('.autocomplete-item').forEach((item, idx) => {
+      item.addEventListener('click', () => {
+        input.value = matches[idx];
+        list.style.display = 'none';
+        if (onSelect) onSelect(matches[idx]);
+      });
+    });
+  });
+}
+
+setupListAC('newBarCountry', 'countrySuggestions', COUNTRIES, (val) => {
+  const stateGroup = document.getElementById('stateGroup');
+  stateGroup.style.display = val === 'United States' ? 'block' : 'none';
+  document.getElementById('newBarState').value = '';
+  document.getElementById('stateSuggestions').style.display = 'none';
+});
+
+setupListAC('newBarState', 'stateSuggestions', US_STATES, null);
+
 // ─── Address autocomplete ─────────────────────────────────────────────────────
 let acTimeout = null;
 let acSelected = null;
@@ -1093,7 +1127,10 @@ document.getElementById('newBarAddress').addEventListener('input', async (e) => 
 
 document.addEventListener('click', (e) => {
   if (!e.target.closest('.autocomplete-wrap')) {
-    document.getElementById('addressSuggestions').style.display = 'none';
+    ['addressSuggestions','countrySuggestions','stateSuggestions'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.style.display = 'none';
+    });
   }
 });
 
