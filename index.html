@@ -380,11 +380,11 @@
         <input type="text" id="newBarHood" placeholder="e.g. Jordaan">
       </div>
       <div class="input-group full" style="margin-top:2px">
-        <label>Address (for map pin)</label>
+        <label>Address * (for map pin)</label>
         <input type="text" id="newBarAddress" placeholder="e.g. Elandsstraat 119, Amsterdam">
       </div>
       <div class="input-group full" style="margin-top:2px">
-        <label>Description (optional)</label>
+        <label>Description *</label>
         <textarea id="newBarDesc" placeholder="What's the vibe? What shouldn't people miss?"></textarea>
       </div>
     </div>
@@ -765,10 +765,12 @@ document.getElementById('submitNewBar').addEventListener('click', async () => {
   const name = document.getElementById('newBarName').value.trim();
   const city = document.getElementById('newBarCity').value.trim();
   const hood = document.getElementById('newBarHood').value.trim();
-  const desc = document.getElementById('newBarDesc').value.trim();
   const country = document.getElementById('newBarCountry').value.trim();
   const state = document.getElementById('newBarState').value.trim();
   if (!name || !city || !country) { showToast('Name, country and city are required', true); return; }
+  const desc = document.getElementById('newBarDesc').value.trim();
+  if (!desc) { showToast('Add a short description — can be sweet and simple!', true); return; }
+  if (!document.getElementById('newBarAddress').value.trim()) { showToast('Address is needed for the map pin!', true); return; }
 
   const address = document.getElementById('newBarAddress').value.trim();
 
