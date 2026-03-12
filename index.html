@@ -769,6 +769,20 @@ document.getElementById('submitNewBar').addEventListener('click', async () => {
   const hood = document.getElementById('newBarHood').value.trim();
   const country = document.getElementById('newBarCountry').value.trim();
   const state = document.getElementById('newBarState').value.trim();
+  // Normalize common country variations
+  const countryNorm = {
+    'usa': 'United States', 'u.s.a': 'United States', 'u.s.a.': 'United States',
+    'us': 'United States', 'u.s.': 'United States', 'america': 'United States',
+    'united states of america': 'United States', 'uk': 'United Kingdom',
+    'u.k.': 'United Kingdom', 'great britain': 'United Kingdom',
+    'holland': 'Netherlands', 'the netherlands': 'Netherlands',
+  };
+  const countryLower = country.toLowerCase().trim();
+  if (countryNorm[countryLower]) {
+    country = countryNorm[countryLower];
+    document.getElementById('newBarCountry').value = country;
+  }
+
   if (!name || !city || !country) { showToast('Name, country and city are required', true); return; }
   const desc = document.getElementById('newBarDesc').value.trim();
   if (!desc) { showToast('Add a short description — can be sweet and simple!', true); return; }
