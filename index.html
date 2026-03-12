@@ -594,7 +594,7 @@ function renderLeaderboard(list) {
   const rated = list.map(b => ({ bar: b, avg: avgRatings(b.id) }))
     .filter(x => x.avg)
     .sort((a, b) => b.avg._overall - a.avg._overall)
-    .slice(0, 6);
+    .slice(0, 5);
   if (!rated.length) { section.style.display = 'none'; return; }
   section.style.display = 'block';
   lb.innerHTML = rated.map((x, i) => `
@@ -792,7 +792,7 @@ document.getElementById('submitNewBar').addEventListener('click', async () => {
 
   // Fuzzy duplicate check
   function normalize(s) { return (s||'').toLowerCase().replace(/[^a-z0-9]/g,''); }
-  const nameParts = normalize(name).slice(0, 6); // first 6 chars of name
+  const nameParts = normalize(name).slice(0, 5); // first 6 chars of name
   const addrParts = normalize(address).slice(0, 8); // first 8 chars of address
   const duplicate = bars.find(b => {
     if (normalize(b.city) !== normalize(city)) return false;
@@ -1027,7 +1027,7 @@ function setupListAC(inputId, listId, items, onSelect) {
   input.addEventListener('input', () => {
     const q = input.value.trim().toLowerCase();
     if (!q) { list.style.display = 'none'; return; }
-    const matches = items.filter(i => i.toLowerCase().startsWith(q)).slice(0, 6);
+    const matches = items.filter(i => i.toLowerCase().startsWith(q)).slice(0, 5);
     if (!matches.length) { list.style.display = 'none'; return; }
     list.innerHTML = matches.map(m => `<div class="autocomplete-item"><div class="ac-main">${m}</div></div>`).join('');
     list.style.display = 'block';
@@ -1061,7 +1061,7 @@ document.getElementById('newBarCity').addEventListener('input', () => {
     .filter(b => !country || !b.country || b.country.toLowerCase() === country.toLowerCase())
     .filter(b => !state || !b.state || b.state.toLowerCase() === state.toLowerCase())
     .map(b => b.city).filter(Boolean))].sort();
-  const matches = cityPool.filter(c => c.toLowerCase().startsWith(q)).slice(0, 6);
+  const matches = cityPool.filter(c => c.toLowerCase().startsWith(q)).slice(0, 5);
   if (!matches.length) { list.style.display = 'none'; return; }
   list.innerHTML = matches.map(c => `<div class="autocomplete-item"><div class="ac-main">${c}</div></div>`).join('');
   list.style.display = 'block';
