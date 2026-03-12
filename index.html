@@ -54,7 +54,7 @@
   .container { max-width: 900px; margin: 0 auto; padding: 0 24px 24px; position: relative; z-index: 1; }
 
   /* HEADER */
-  header { text-align: center; padding: 36px 0 20px; }
+  header { text-align: center; padding: 24px 0 12px; }
   .logo {
     font-family: 'Playfair Display', serif;
     font-size: clamp(3rem, 8vw, 5.5rem); font-weight: 700; letter-spacing: -0.02em;
@@ -62,7 +62,7 @@
     -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
     line-height: 1; margin-bottom: 10px;
   }
-  .tagline { color: var(--muted); font-size: 0.9rem; letter-spacing: 0.18em; text-transform: uppercase; margin-bottom: 36px; }
+  .tagline { color: var(--muted); font-size: 0.9rem; letter-spacing: 0.18em; text-transform: uppercase; margin-bottom: 16px; }
 
   /* SYNC DOT */
   .sync-dot { width: 7px; height: 7px; border-radius: 50%; background: #3a2f4a; display: inline-block; margin-left: 8px; vertical-align: middle; transition: background 0.3s; }
@@ -72,7 +72,7 @@
   @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
 
   /* TOOLBAR */
-  .toolbar { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: 28px; }
+  .toolbar { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: 20px; margin-top: 16px; }
   @media (max-width: 600px) {
     .toolbar { flex-wrap: wrap; gap: 8px; }
     .search-wrap { flex: 1; min-width: 0; order: 1; }
@@ -296,8 +296,8 @@
   <header>
     <div class="logo" onclick="window.location.reload()" style="cursor:pointer;">saphlick</div>
     <div class="tagline">queer bar ratings <span class="sync-dot loading" id="syncDot"></span></div>
-    <div id="barCount" style="font-size:0.78rem;color:var(--muted);margin-bottom:12px;letter-spacing:0.08em;"></div>
     <div class="header-divider"></div>
+    <div id="barCount" style="font-size:0.78rem;color:var(--muted);margin-top:-4px;margin-bottom:0;letter-spacing:0.08em;"></div>
   </header>
 
   <div class="toolbar">
