@@ -769,9 +769,25 @@ document.getElementById('submitNewBar').addEventListener('click', async () => {
   const country = document.getElementById('newBarCountry').value.trim();
   const state = document.getElementById('newBarState').value.trim();
   if (!name || !city || !country) { showToast('Name, country and city are required', true); return; }
-  if (country.toLowerCase() === 'united states' && !state) { showToast('Please select a state', true); return; }
 
   const address = document.getElementById('newBarAddress').value.trim();
+
+  // Fuzzy duplicate check
+  function normalize(s) { return (s||'').toLowerCase().replace(/[^a-z0-9]/g,''); }
+  const nameParts = normalize(name).slice(0, 6); // first 6 chars of name
+  const addrParts = normalize(address).slice(0, 8); // first 8 chars of address
+  const duplicate = bars.find(b => {
+    if (normalize(b.city) !== normalize(city)) return false;
+    const sameName = nameParts.length >= 4 && normalize(b.name).includes(nameParts);
+    const sameAddr = addrParts.length >= 5 && normalize(b.address||'').includes(addrParts);
+    return sameName || sameAddr;
+  });
+  if (duplicate) {
+    showToast(`"${duplicate.name}" in ${duplicate.city} already exists!`, true);
+    return;
+  }
+  if (country.toLowerCase() === 'united states' && !state) { showToast('Please select a state', true); return; }
+
   const btn = document.getElementById('submitNewBar');
   btn.textContent = 'Saving…'; btn.disabled = true;
 
