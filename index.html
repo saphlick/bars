@@ -582,6 +582,7 @@ function renderMobileTop3(list) {
     <div class="mobile-top3-card" onclick="scrollToBar('${x.bar.id}')" style="cursor:pointer">
       <div class="mobile-top3-rank">#${i+1}</div>
       <div class="mobile-top3-name">${x.bar.name}</div>
+      <div style="font-size:0.65rem;color:var(--muted);margin-bottom:2px;">${x.bar.city||''}</div>
       <div class="mobile-top3-score">${x.avg._overall.toFixed(1)}</div>
     </div>
   `).join('')}</div>`;
@@ -1029,17 +1030,20 @@ document.getElementById('newBarAddress').addEventListener('input', async (e) => 
     try {
       const city = document.getElementById('newBarCity').value.trim();
       const country = document.getElementById('newBarCountry').value.trim();
-      const searchQ = [q, city, country].filter(Boolean).join(', ');
-      const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQ)}&limit=5&addressdetails=1`;
-      const res = await fetch(url, { headers: { 'Accept-Language': 'en', 'User-Agent': 'saphlick/1.0' } });
+      const searchQ = [q, city, country].filter(Boolean).join(' ');
+      const url = `https://photon.komoot.io/api/?q=${encodeURIComponent(searchQ)}&limit=5&layer=house&layer=street`;
+      const res = await fetch(url);
       const data = await res.json();
-      if (!data.length) { list.style.display = 'none'; return; }
+      const features = (data.features || []);
+      if (!features.length) { list.style.display = 'none'; return; }
 
-      list.innerHTML = data.map((item, i) => {
-        const a = item.address || {};
-        const main = [a.house_number, a.road].filter(Boolean).join(' ') || item.display_name.split(',')[0];
-        const sub = [a.city || a.town || a.village, a.state, a.country].filter(Boolean).join(', ');
-        return `<div class="autocomplete-item" data-index="${i}" data-display="${item.display_name}" data-lat="${item.lat}" data-lng="${item.lon}">
+      list.innerHTML = features.map((item, i) => {
+        const p = item.properties || {};
+        const main = [p.housenumber, p.street || p.name].filter(Boolean).join(' ') || p.name || '';
+        const sub = [p.city || p.town || p.village, p.state, p.country].filter(Boolean).join(', ');
+        const lat = item.geometry.coordinates[1];
+        const lng = item.geometry.coordinates[0];
+        return `<div class="autocomplete-item" data-display="${main}, ${sub}" data-lat="${lat}" data-lng="${lng}">
           <div class="ac-main">${main}</div>
           <div class="ac-sub">${sub}</div>
         </div>`;
@@ -1056,7 +1060,7 @@ document.getElementById('newBarAddress').addEventListener('input', async (e) => 
           list.style.display = 'none';
         });
       });
-    } catch(e) { console.warn('Autocomplete error:', e); list.innerHTML = '<div class="autocomplete-item"><div class="ac-main">Could not load suggestions</div></div>'; list.style.display = 'block'; }
+    } catch(e) { console.warn('Autocomplete error:', e); }
   }, 350);
 });
 
