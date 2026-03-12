@@ -1031,13 +1031,13 @@ document.getElementById('newBarAddress').addEventListener('input', async (e) => 
       const country = document.getElementById('newBarCountry').value.trim();
       const searchQ = [q, city, country].filter(Boolean).join(', ');
       const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQ)}&limit=5&addressdetails=1`;
-      const res = await fetch(url, { headers: { 'Accept-Language': 'en' } });
+      const res = await fetch(url, { headers: { 'Accept-Language': 'en', 'User-Agent': 'saphlick/1.0' } });
       const data = await res.json();
       if (!data.length) { list.style.display = 'none'; return; }
 
       list.innerHTML = data.map((item, i) => {
         const a = item.address || {};
-        const main = [a.road, a.house_number].filter(Boolean).join(' ') || item.display_name.split(',')[0];
+        const main = [a.house_number, a.road].filter(Boolean).join(' ') || item.display_name.split(',')[0];
         const sub = [a.city || a.town || a.village, a.state, a.country].filter(Boolean).join(', ');
         return `<div class="autocomplete-item" data-index="${i}" data-display="${item.display_name}" data-lat="${item.lat}" data-lng="${item.lon}">
           <div class="ac-main">${main}</div>
@@ -1056,7 +1056,7 @@ document.getElementById('newBarAddress').addEventListener('input', async (e) => 
           list.style.display = 'none';
         });
       });
-    } catch(e) { console.warn('Autocomplete error:', e); }
+    } catch(e) { console.warn('Autocomplete error:', e); list.innerHTML = '<div class="autocomplete-item"><div class="ac-main">Could not load suggestions</div></div>'; list.style.display = 'block'; }
   }, 350);
 });
 
