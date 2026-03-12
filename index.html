@@ -297,7 +297,6 @@
     <div class="logo" onclick="window.location.reload()" style="cursor:pointer;">saphlick</div>
     <div class="tagline">lesbian bar ratings <span class="sync-dot loading" id="syncDot"></span></div>
     <div class="header-divider"></div>
-    <div id="barCount" style="font-size:0.78rem;color:var(--muted);margin-top:-4px;margin-bottom:0;letter-spacing:0.08em;"></div>
   </header>
 
   <div class="toolbar">
@@ -334,7 +333,7 @@
     <div class="leaderboard" id="leaderboard"></div>
   </div>
 
-  <div class="section-title">Bars</div>
+  <div class="section-title" id="barsTitle">Bars</div>
   <div class="bars-list" id="barsList">
     <div class="empty-state"><div class="big">Loading…</div></div>
   </div>
@@ -609,11 +608,8 @@ function renderLeaderboard(list) {
 }
 
 function renderBars(list) {
-  const countEl = document.getElementById('barCount');
-  if (countEl) {
-    const total = list.length;
-    countEl.textContent = total === 1 ? '1 bar' : `${total} bars`;
-  }
+  const titleEl = document.getElementById('barsTitle');
+  if (titleEl) titleEl.textContent = `(${list.length}) Bars`;
   const el = document.getElementById('barsList');
   if (!list.length) {
     el.innerHTML = `<div class="empty-state"><div class="big">Nothing here yet</div><p>Be the first to add a bar!</p></div>`;
