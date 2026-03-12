@@ -763,10 +763,14 @@ function buildBarCard(bar) {
         <div class="bar-avg">${overallDisplay}</div>
       </div>
       ${bar.description ? `<div class="bar-desc">${bar.description}</div>` : ''}
-      <div style="padding:0 24px 16px">
+      <div style="padding:0 24px 16px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
         <button class="toggle-btn" id="toggle2-${bar.id}">
           Rate &amp; Reviews <em class="toggle-icon">▼</em>
         </button>
+        ${(() => {
+          const url = bar.website || `https://www.google.com/search?q=${encodeURIComponent(bar.name + ' ' + (bar.city || '') + ' ' + (bar.country || ''))}`;
+          return `<a href="${url}" target="_blank" rel="noopener" class="toggle-btn" style="text-decoration:none;">🌐 View listing</a>`;
+        })()}
       </div>
       <div class="rating-form">
         <div class="form-title">Your Rating</div>
@@ -945,7 +949,7 @@ function renderMap(barList) {
     if (latLngs.length === 1) {
       mapInstance.setView(latLngs[0], 15);
     } else if (latLngs.length > 1) {
-      mapInstance.fitBounds(L.latLngBounds(latLngs), { padding: [60, 60] });
+      mapInstance.fitBounds(L.latLngBounds(latLngs), { padding: [60, 60], maxZoom: 13 });
     }
     mapInstance.invalidateSize();
   }, 50);
