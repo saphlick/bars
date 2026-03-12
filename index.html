@@ -370,18 +370,18 @@
         <input type="text" id="newBarState" placeholder="e.g. New York" autocomplete="off">
         <div class="autocomplete-list" id="stateSuggestions" style="display:none;"></div>
       </div>
-      <div class="input-group">
+      <div class="input-group autocomplete-wrap">
         <label>City *</label>
-        <input type="text" id="newBarCity" placeholder="e.g. Amsterdam">
+        <input type="text" id="newBarCity" placeholder="e.g. Amsterdam" autocomplete="off">
+        <div class="autocomplete-list" id="citySuggestions" style="display:none;"></div>
       </div>
       <div class="input-group">
         <label>Neighbourhood</label>
         <input type="text" id="newBarHood" placeholder="e.g. Jordaan">
       </div>
-      <div class="input-group full autocomplete-wrap" style="margin-top:2px">
+      <div class="input-group full" style="margin-top:2px">
         <label>Address (for map pin)</label>
-        <input type="text" id="newBarAddress" placeholder="e.g. Elandsstraat 119, Amsterdam" autocomplete="off">
-        <div class="autocomplete-list" id="addressSuggestions" style="display:none;"></div>
+        <input type="text" id="newBarAddress" placeholder="e.g. Elandsstraat 119, Amsterdam">
       </div>
       <div class="input-group full" style="margin-top:2px">
         <label>Description (optional)</label>
@@ -1016,57 +1016,36 @@ setupListAC('newBarCountry', 'countrySuggestions', COUNTRIES, (val) => {
 
 setupListAC('newBarState', 'stateSuggestions', US_STATES, null);
 
-// ─── Address autocomplete ─────────────────────────────────────────────────────
+// City autocomplete - suggests from existing bars + filters by selected country/state
+document.getElementById('newBarCity').addEventListener('input', () => {
+  const q = document.getElementById('newBarCity').value.trim().toLowerCase();
+  const list = document.getElementById('citySuggestions');
+  if (!q) { list.style.display = 'none'; return; }
+  const country = document.getElementById('newBarCountry').value.trim();
+  const state = document.getElementById('newBarState').value.trim();
+  let cityPool = [...new Set(bars
+    .filter(b => !country || !b.country || b.country.toLowerCase() === country.toLowerCase())
+    .filter(b => !state || !b.state || b.state.toLowerCase() === state.toLowerCase())
+    .map(b => b.city).filter(Boolean))].sort();
+  const matches = cityPool.filter(c => c.toLowerCase().startsWith(q)).slice(0, 6);
+  if (!matches.length) { list.style.display = 'none'; return; }
+  list.innerHTML = matches.map(c => `<div class="autocomplete-item"><div class="ac-main">${c}</div></div>`).join('');
+  list.style.display = 'block';
+  list.querySelectorAll('.autocomplete-item').forEach((item, idx) => {
+    item.addEventListener('click', () => {
+      document.getElementById('newBarCity').value = matches[idx];
+      list.style.display = 'none';
+    });
+  });
+});
+
+// ─── Address autocomplete removed ───────────────────────────────────────────
 let acTimeout = null;
 let acSelected = null;
 
-document.getElementById('newBarAddress').addEventListener('input', async (e) => {
-  const q = e.target.value.trim();
-  const list = document.getElementById('addressSuggestions');
-  if (q.length < 4) { list.style.display = 'none'; return; }
-
-  clearTimeout(acTimeout);
-  acTimeout = setTimeout(async () => {
-    try {
-      const city = document.getElementById('newBarCity').value.trim();
-      const country = document.getElementById('newBarCountry').value.trim();
-      const searchQ = [q, city, country].filter(Boolean).join(' ');
-      const url = `https://photon.komoot.io/api/?q=${encodeURIComponent(searchQ)}&limit=5&layer=house&layer=street`;
-      const res = await fetch(url);
-      const data = await res.json();
-      const features = (data.features || []);
-      if (!features.length) { list.style.display = 'none'; return; }
-
-      list.innerHTML = features.map((item, i) => {
-        const p = item.properties || {};
-        const main = [p.housenumber, p.street || p.name].filter(Boolean).join(' ') || p.name || '';
-        const sub = [p.city || p.town || p.village, p.state, p.country].filter(Boolean).join(', ');
-        const lat = item.geometry.coordinates[1];
-        const lng = item.geometry.coordinates[0];
-        return `<div class="autocomplete-item" data-display="${main}, ${sub}" data-lat="${lat}" data-lng="${lng}">
-          <div class="ac-main">${main}</div>
-          <div class="ac-sub">${sub}</div>
-        </div>`;
-      }).join('');
-
-      list.style.display = 'block';
-      list.querySelectorAll('.autocomplete-item').forEach(item => {
-        item.addEventListener('click', () => {
-          const input = document.getElementById('newBarAddress');
-          const display = item.dataset.display;
-          // Store clean address (first 2 parts)
-          input.value = display.split(',').slice(0,2).join(',').trim();
-          acSelected = { lat: parseFloat(item.dataset.lat), lng: parseFloat(item.dataset.lng) };
-          list.style.display = 'none';
-        });
-      });
-    } catch(e) { console.warn('Autocomplete error:', e); }
-  }, 350);
-});
-
 document.addEventListener('click', (e) => {
   if (!e.target.closest('.autocomplete-wrap')) {
-    ['addressSuggestions','countrySuggestions','stateSuggestions'].forEach(id => {
+    ['countrySuggestions','stateSuggestions','citySuggestions'].forEach(id => {
       const el = document.getElementById(id);
       if (el) el.style.display = 'none';
     });
