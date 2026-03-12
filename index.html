@@ -759,7 +759,7 @@ function buildBarCard(bar) {
         <div class="bar-meta">
           ${cityTag ? `<div class="bar-city-tag">${cityTag}</div>` : ''}
           <div class="bar-name">${bar.name}</div>
-          ${bar.address ? `<div style="font-size:0.75rem;color:var(--muted);margin-top:3px;">${bar.address}</div>` : ''}
+          ${bar.address ? `<div style="font-size:0.75rem;color:var(--muted);margin-top:3px;">${bar.address.split(',').slice(0,2).join(',').trim()}</div>` : ''}
         </div>
         <div class="bar-avg">${overallDisplay}</div>
       </div>
