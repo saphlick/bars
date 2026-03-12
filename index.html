@@ -131,6 +131,7 @@
 
   /* LEADERBOARD */
   .leaderboard { display: grid; grid-template-columns: repeat(auto-fill, minmax(148px, 1fr)); gap: 10px; margin-bottom: 32px; }
+  @media (max-width: 600px) { #leaderboardSection { display: none !important; } }
   .lb-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 16px; text-align: center; transition: border-color 0.2s; }
   .lb-card:hover { border-color: rgba(176,111,216,0.4); }
   .lb-rank { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--muted); margin-bottom: 4px; }
