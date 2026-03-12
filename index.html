@@ -916,6 +916,8 @@ function renderMap(barList) {
   // Clear old markers
   mapMarkers.forEach(m => m.remove());
   mapMarkers = [];
+  // Force re-fit on every render
+  const shouldRefit = true;
 
   const latLngs = [];
   barsWithCoords.forEach(bar => {
@@ -939,11 +941,14 @@ function renderMap(barList) {
     latLngs.push([bar.lat, bar.lng]);
   });
 
-  if (latLngs.length === 1) {
-    mapInstance.setView(latLngs[0], 15);
-  } else {
-    mapInstance.fitBounds(L.latLngBounds(latLngs), { padding: [40, 40] });
-  }
+  setTimeout(() => {
+    if (latLngs.length === 1) {
+      mapInstance.setView(latLngs[0], 15);
+    } else if (latLngs.length > 1) {
+      mapInstance.fitBounds(L.latLngBounds(latLngs), { padding: [60, 60] });
+    }
+    mapInstance.invalidateSize();
+  }, 50);
 }
 
 async function geocodeAddress(address) {
