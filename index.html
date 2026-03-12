@@ -609,7 +609,7 @@ function renderLeaderboard(list) {
 
 function renderBars(list) {
   const titleEl = document.getElementById('barsTitle');
-  if (titleEl) titleEl.textContent = `(${list.length}) Bars`;
+  if (titleEl) titleEl.textContent = list.length === 1 ? '(1) Bar' : `(${list.length}) Bars`;
   const el = document.getElementById('barsList');
   if (!list.length) {
     el.innerHTML = `<div class="empty-state"><div class="big">Nothing here yet</div><p>Be the first to add a bar!</p></div>`;
